@@ -1,0 +1,94 @@
+<program> ::= <identifier> ":" <block> ENDP <identifier> "."
+
+<block> ::= <block_complete> 
+				| CODE <statment_list>
+<block_complete> ::= DECLARATION <declaration_block> CODE <statment_list>
+
+<declaration_identifier> ::= <identifier> 
+				| <identifier> "," <declaration_identifier>
+<declaration_block> ::= <declaration_identifier> OF TYPE <type> ";" 
+				| <declaration_identifier> OF TYPE <type> ";" <declaration_block>
+
+<type> ::= (CHARACTER 
+				| INTEGER 
+				| REAL)
+
+<statment_list> ::= <statment> 
+				| <statment> ";" | <statment_list>
+
+<statment> ::= <assignment_statment> 
+				| <if_statment> 
+				| <do_statment> 
+				| <while_statment> 
+				| <for_statment> 
+				| <write_statment> 
+				| <read_statment> 
+
+<assignment_statment> ::= <expression> "->" <identifier>
+
+<if_statment> ::= IF <condition> THEN <statement> ENDIF
+                | IF <condition> THEN <statement> ELSE <statement> ENDIF
+
+<do_statment> ::= DO <statment_list> WHILE <conditional> ENDDO
+
+<while_statment> ::= WHILE <conditional> DO <statment_list> ENDWHILE
+
+<for_statment> ::= FOR <identifier> IS <expression> BY <expression> TO <expression> DO <expression> ENDFOR
+
+<write_statment> ::= NEWLINE | WRITE "("<output_list>")" 
+
+<read_statment> ::= READ (identifier)
+
+<output_list> ::= <value> | <value> "," <output_list>
+
+
+<conditional> ::= <conditional_body> 
+				| <conditional_body> AND <conditional> 
+				| <conditional_body> OR <conditional>
+<conditional_body> ::= <not> <expression> <comparator> <expression>
+<not> ::= NOT | NOT <not>
+
+
+<comparator> ::= "="
+				|"<>"
+				|"<"
+				|">"
+				|"<="
+				|">="
+				
+<expression> ::= <term> 
+				| <term> "+" <expression> 
+				| <term> "-" <expression>
+
+<term> ::= <value> 
+				| <value> "*" <term>
+				| <value> "/" <term>
+
+<value> ::= <identifier> 
+				| <constant> 
+				| "("<expression>")"
+			
+<constant> ::= <number_constant> 
+				| <character_constant>
+
+<character_constant> ::= "'" <character> "'"
+
+<number_constant> ::= "-" <any_digit> "." <any_digit>
+				| <any_digit> "." <any_digit>
+				| "-" <any_digit>
+				| <any_digit>
+
+<identifier> ::= <character> <identifier_member>
+<identifier_member> ::= <any_character> 
+				| <any_character> <identifier_member> 
+				|<any_digit> 
+				|<any_digit> <identifier_member>
+
+<any_digit> ::= <digit> | <digit> <any_digit>
+<any_character> ::= <character><any_character>
+
+<character> ::= 
+			  "a"| "b"| "c"| "d"| "e"| "f"| "g"| "h"| "i"| "j"| "k"| "l"| "m"| "n"| "o"| "p"| "q"| "r"| "s"| "t"| "u"| "v"| "w"| "x"| "y"| "z" |
+			  "A"| "B"| "C"| "D"| "E"| "F"| "G"| "H"| "I"| "J"| "K"| "L"| "M"| "N"| "O"| "P"| "Q"| "R"| "S"| "T"| "U"| "V"| "W"| "X"| "Y"| "Z"
+			
+<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0
