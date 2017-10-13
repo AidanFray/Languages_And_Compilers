@@ -10,18 +10,18 @@
 #define INDENTOFFSET    2
 
 /* Enum that defines the types used in the ParseTree */
-enum ParseTreeNodeType 
+enum ParseTreeNodeType_RULE 
 { 
 	PROGRAM, 
 	BLOCK,
 	DECLARATION_IDENTIFIER,
 	DECLARATION_BLOCK,
-	TYPE,
+	TYPE_RULE,
 	STATEMENT_LIST,
 	STATEMENT,
-	CHARACTER,
-	INTEGER,
-	REAL,
+	CHARACTER_VALUE,
+	INTEGER_VALUE,
+	REAL_VALUE,
 	ASSIGNMENT_STATEMENT,
 	IF_STATEMENT,
 	DO_STATEMENT,
@@ -32,7 +32,7 @@ enum ParseTreeNodeType
 	OUTPUT_LIST,
 	CONDITIONAL,
 	CONDITIONAL_BODY,
-	NOT,
+	NOT_VALUE,
 	COMPARATOR,
 	EXPRESSION,
 	PLUS_EXPRESSION,
@@ -79,6 +79,7 @@ typedef  TREE_NODE *TREE;
 
 TREE create_node(int,int,TREE,TREE,TREE,TREE);
 int yylex (void);
+void PrintTree(TREE);
 
 /* ------------- symbol table definition --------------------------- */
 
@@ -103,10 +104,17 @@ int currentSymTabSize = 0;
 }
 
 %type<tVal>
-	program block declaration_identifier declaration_block type
-	statement_list statement assignment_statement if_statement
-	do_statement
-	while_statement
+	program 
+	block 
+	declaration_identifier 
+	declaration_block 
+	type_rule
+	statement_list 
+	statement 
+	assignment_statement 
+	if_statement
+	do_statement 
+	while_statement 
 	for_statement
 	write_statement
 	read_statement
@@ -193,9 +201,11 @@ int currentSymTabSize = 0;
 program : 
 		ID COLON block ENDP ID FULLSTOP  	
 		{ 	
-		 	
-			 TREE ParseTree; 
+			TREE ParseTree; 
 			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL, NULL);
+			
+			/*Prints the tree*/
+			//PrintTree(ParseTree);
 		}
 		;	
 	
@@ -222,28 +232,28 @@ declaration_identifier :
 		;	
 	
 declaration_block : 
-		declaration_identifier OF TYPE type SEMICOLON 
+		declaration_identifier OF TYPE type_rule SEMICOLON 
 		{
 			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, NULL, NULL);
 		}
-		| declaration_identifier OF TYPE type SEMICOLON declaration_block
+		| declaration_identifier OF TYPE type_rule SEMICOLON declaration_block
 		{
 			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, $6, NULL);
 		}
 		;
 	
-type : 
-		CHARACTER 
+type_rule : 
+		CHARACTER
 		{
-			$$ = create_node(CHARACTER, TYPE, NULL, NULL, NULL, NULL);
+			$$ = create_node(CHARACTER_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
 		}
 		| INTEGER
 		{
-			$$ = create_node(INTEGER, TYPE, NULL, NULL, NULL, NULL);
+			$$ = create_node(INTEGER_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
 		}
 		| REAL
 		{
-			$$ = create_node(REAL, TYPE, NULL, NULL, NULL, NULL);
+			$$ = create_node(REAL_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
 		}
 		;
 	
@@ -387,11 +397,11 @@ conditional_body :
 not : 
 		NOT
 		{
-			$$ = create_node(NOTHING, NOT, NULL, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, NOT_VALUE, NULL, NULL, NULL, NULL);
 		} 
 		| NOT not
 		{
-			$$ = create_node(NOTHING, NOT, $2, NULL, NULL, NULL);			
+			$$ = create_node(NOTHING, NOT_VALUE, $2, NULL, NULL, NULL);			
 		}
 		;
 	
@@ -536,5 +546,17 @@ TREE p1,TREE  p2,TREE  p3, TREE p4)
 
 
 /* Put other auxiliary functions here */
+
+void PrintTree(TREE t)
+{
+	if(t == NULL) return;
+	printf("Item: %d", t->item);
+	printf(" nodeID: %d\n", t->nodeIdentifier);
+	PrintTree(t->first);
+	PrintTree(t->second);
+	PrintTree(t->third);
+	PrintTree(t->forth);
+}
+
 
 #include "lex.yy.c"
