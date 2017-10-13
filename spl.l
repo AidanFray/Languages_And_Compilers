@@ -39,71 +39,71 @@ DO         	TOKEN(DO)
 ENDDO		TOKEN(ENDDO)
 ENDWHILE	TOKEN(ENDWHILE)
 	
-FOR		TOKEN(FOR)
-IS		TOKEN(IS)
-BY		TOKEN(BY)
-TO		TOKEN(TO)
+FOR			TOKEN(FOR)
+IS			TOKEN(IS)
+BY			TOKEN(BY)
+TO			TOKEN(TO)
 ENDFOR		TOKEN(ENDFOR)
 
-OF		TOKEN(OF)
+OF			TOKEN(OF)
 TYPE		TOKEN(TYPE)
 NEWLINE		TOKEN(NEWLINE)
 
-		/* ADD */
+			/* ADD */
 READ		TOKEN(READ)
-AND		TOKEN(AND)
+AND			TOKEN(AND)
 WRITE		TOKEN(WRITE)
-OR		TOKEN(OR)
-NOT		TOKEN(NOT)
+OR			TOKEN(OR)
+NOT			TOKEN(NOT)
 
-		/* ---------------------------------------------------------- */
+			/* ---------------------------------------------------------- */
 			
 		
 		
-		/* ---------------------------TOKENS------------------------- */
-":"		TOKEN(COLON)
+			/* ---------------------------TOKENS------------------------- */
+":"			TOKEN(COLON)
 ";"        	TOKEN(SEMICOLON)
-","		TOKEN(COMMA)
-"("		TOKEN(BRA)
-")"		TOKEN(KET)
-"."		TOKEN(FULLSTOP)
+","			TOKEN(COMMA)
+"("			TOKEN(BRA)
+")"			TOKEN(KET)
+"."			TOKEN(FULLSTOP)
 "->"       	TOKEN(ASSIGNMENT) 
-"'"		TOKEN(SINGLE_QUOTE)
+"'"			TOKEN(SINGLE_QUOTE)
 	
-		/* OPERATOR TOKENS */
+			/* OPERATOR TOKENS */
 "+"        	TOKEN(PLUS)
 "-"        	TOKEN(MINUS)
-"/"		TOKEN(DIVIDE)
-"*"		TOKEN(TIMES)
+"/"			TOKEN(DIVIDE)
+"*"			TOKEN(TIMES)
 	
-		/* COMPARASON TOKENS */
-"="		TOKEN(ET)
+			/* COMPARASON TOKENS */
+"="			TOKEN(ET)
 "<>"		TOKEN(NET)
 "<"        	TOKEN(LT)
 "<="		TOKEN(ELT)
 ">"        	TOKEN(GT)
 ">="		TOKEN(EGT)
-		/* ---------------------------------------------------------- */
+			/* ---------------------------------------------------------- */
 			
 			
 			
-		/* ----------------------------TYPES------------------------- */
+			/* ----------------------------TYPES------------------------- */
 CHARACTER	TOKEN(CHARACTER)
 INTEGER		TOKEN(INTEGER)
 REAL		TOKEN(REAL)
-		/* ---------------------------------------------------------- */
-	
+			/* ---------------------------------------------------------- */
+
 	
 
 {ws}        ; /* white space, do nothing */
 	
 {id}        TOKEN(ID)
 
-{number}    	{
-			k = atoi(yytext);
-			yyval = k;
-			TOKEN(NUMBER);
-		}
+{number}    {
+				k = atoi(yytext);
+				yyval = k;
+				TOKEN(NUMBER);
+			}
 
 %%
 	
