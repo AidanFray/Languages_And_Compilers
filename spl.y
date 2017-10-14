@@ -12,41 +12,21 @@
 /* Enum that defines the types used in the ParseTree */
 enum ParseTreeNodeType_RULE 
 { 
-	PROGRAM, 
-	BLOCK,
-	DECLARATION_IDENTIFIER,
-	DECLARATION_BLOCK,
-	TYPE_RULE,
-	STATEMENT_LIST,
-	STATEMENT,
-	CHARACTER_VALUE,
-	INTEGER_VALUE,
-	REAL_VALUE,
-	ASSIGNMENT_STATEMENT,
-	IF_STATEMENT,
-	DO_STATEMENT,
-	WHILE_STATEMENT,
-	FOR_STATEMENT,
-	WRITE_STATEMENT,
-	READ_STATEMENT,
-	OUTPUT_LIST,
-	CONDITIONAL,
-	CONDITIONAL_BODY,
-	NOT_VALUE,
-	COMPARATOR,
-	EXPRESSION,
-	PLUS_EXPRESSION,
-	MINUS_EXPRESSION,
-	TERM,
-	DIVIDE_TERM,
-	TIMES_TERM,
-	VALUE,
-	NUMBER_CONSTANT,
-	CHAR_CONSTANT,
-	LITERAL_CHAR_CONSTANT,
-	LITERAL_NUMBER_CONSTANT,
-	ANY_DIGIT
+	PROGRAM, BLOCK,DECLARATION_IDENTIFIER,DECLARATION_BLOCK,TYPE_RULE,STATEMENT_LIST,STATEMENT,
+	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
+	FOR_STATEMENT,WRITE_STATEMENT,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_BODY,NOT_VALUE,
+	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT
 };  
+
+char *NodeName[] = 
+{
+	"PROGRAM", "BLOCK","DECLARATION_IDENTIFIER","DECLARATION_BLOCK","TYPE_RULE","STATEMENT_LIST","STATEMENT",
+	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
+	"FOR_STATEMENT","WRITE_STATEMENT","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL","CONDITIONAL_BODY","NOT_VALUE",
+	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT"
+};
 
 #ifndef TRUE
 #define TRUE 1
@@ -60,7 +40,7 @@ enum ParseTreeNodeType_RULE
 #define NULL 0
 #endif
 
-/* ------------- parse tree definition --------------------------- */
+/* ------------- Parse Tree definition -------------------------- */
 
 struct treeNode {
     int  item;
@@ -74,14 +54,15 @@ struct treeNode {
 typedef  struct treeNode TREE_NODE;
 typedef  TREE_NODE *TREE;
 
-/* ------------- forward declarations --------------------------- */
+/* ------------- Forward declarations --------------------------- */
  
 
 TREE create_node(int,int,TREE,TREE,TREE,TREE);
 int yylex (void);
 void PrintTree(TREE);
+void ID_CHECK(char*, TREE);
 
-/* ------------- symbol table definition --------------------------- */
+/* ------------- Symbol table definition ----------------------- */
 
 struct symTabNode {
     char identifier[IDLENGTH];
@@ -205,7 +186,7 @@ program :
 			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL, NULL);
 			
 			/*Prints the tree*/
-			//PrintTree(ParseTree);
+			PrintTree(ParseTree);
 		}
 		;	
 	
@@ -527,36 +508,80 @@ any_digit :
 %%
 
 /* Code for routines for managing the Parse Tree */
- 
-
 TREE create_node(int ival, int case_identifier,  
 TREE p1,TREE  p2,TREE  p3, TREE p4)
 {
      
 	TREE t;
-    t =  (TREE)malloc(sizeof(TREE_NODE));
-    t->item = ival;
-    t->nodeIdentifier = case_identifier;
-    t->first = p1;
-    t->second = p2;
-    t->third = p3;
+	t =  (TREE)malloc(sizeof(TREE_NODE));
+	t->item = ival;
+	t->nodeIdentifier = case_identifier;
+	t->first = p1;
+	t->second = p2;
+	t->third = p3;
 	t->forth = p4;
     return (t);
 }
 
+//Keeps track of how much indent there should be
+int spaceCount = 0;
 
 /* Put other auxiliary functions here */
-
 void PrintTree(TREE t)
 {
-	if(t == NULL) return;
-	printf("Item: %d", t->item);
-	printf(" nodeID: %d\n", t->nodeIdentifier);
+	/* Guard statement */
+	if (t == NULL) return;
+
+	/* Prints special id's */
+	if (t->item != NOTHING) 	
+	{	
+		switch (t->nodeIdentifier) 
+		{
+			case ANY_DIGIT:
+				printf("NUMBER: %d ", t->item);
+				break;
+			case VALUE:
+				ID_CHECK("ID", t);
+				break;
+			case DECLARATION_IDENTIFIER:
+				ID_CHECK("DECLARATION ID", t);
+				break;
+		}
+	}
+
+
+	/* Printing the name of the ID */
+	if (t->nodeIdentifier < 0 || t->nodeIdentifier > sizeof(NodeName))
+		printf("Unknown nodeID: %d\n", t->nodeIdentifier);
+	else
+		printf("nodeID: %s\n", NodeName[t->nodeIdentifier]);
+
+	//Indetent priniting
+	for (int i = 0; i < spaceCount; i++)
+	{
+		printf("  ");
+	}
+
+	/*The ident works by incrementing until it reaches a terminator then resets
+	  it just shows a very basic relationship*/
+	if(t->first == NULL && t->forth == NULL)
+		spaceCount = 0; 
+	else
+		spaceCount++;
+	
 	PrintTree(t->first);
 	PrintTree(t->second);
 	PrintTree(t->third);
 	PrintTree(t->forth);
 }
 
+/* Function that checks if the ID is in the symbol table */
+void ID_CHECK(char *idType, TREE t)
+{
+		if (t->item > 0 && t->item < SYMTABSIZE)
+			printf("%s: %s ", idType, symTab[t->item]->identifier);
+		else
+			printf("UNKNOWN ID: %d ", t->item);
+}
 
 #include "lex.yy.c"
