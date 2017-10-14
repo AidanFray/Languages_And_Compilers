@@ -1,5 +1,5 @@
 %{
-#ifdef PRINTING
+#ifdef PRINT
 #define TOKEN(t) printf(#t "\n");
 #else
 #define TOKEN(t) return(t);
@@ -93,17 +93,17 @@ REAL		TOKEN(REAL)
 	
 
 {ws}        ; /* white space, do nothing */
-	
 {id}        {
 				yylval.iVal = installId(yytext);
 				TOKEN(ID)
 			}
-
 {number}    {
 				yylval.iVal = atoi(yytext);
 				TOKEN(NUMBER)
 			}
 
+
+.           printf("Error: Unexpected symbol in spl.l: %s (%d)\n", yytext, yytext[0]);
 %%
 	
 SYMTABNODEPTR newSymTabNode()
@@ -156,4 +156,3 @@ int installId(char *id)
        return(currentSymTabSize++);
     }
 }
-	

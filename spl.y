@@ -59,8 +59,9 @@ typedef  TREE_NODE *TREE;
 
 TREE create_node(int,int,TREE,TREE,TREE,TREE);
 int yylex (void);
-void PrintTree(TREE);
+void PrintTree(TREE, int);
 void ID_CHECK(char*, TREE);
+void Code(TREE);
 
 /* ------------- Symbol table definition ----------------------- */
 
@@ -186,7 +187,9 @@ program :
 			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL, NULL);
 			
 			/*Prints the tree*/
-			PrintTree(ParseTree);
+			#ifdef DEBUG
+			PrintTree(ParseTree, 0);
+			#endif
 		}
 		;	
 	
@@ -524,10 +527,10 @@ TREE p1,TREE  p2,TREE  p3, TREE p4)
 }
 
 //Keeps track of how much indent there should be
-int spaceCount = 0;
-
+#define INDENTVALUE 2
+int currentPosition = 0;
 /* Put other auxiliary functions here */
-void PrintTree(TREE t)
+void PrintTree(TREE t, int indent)
 {
 	/* Guard statement */
 	if (t == NULL) return;
@@ -546,9 +549,10 @@ void PrintTree(TREE t)
 			case DECLARATION_IDENTIFIER:
 				ID_CHECK("DECLARATION ID", t);
 				break;
+			default:
+				printf("ITEM: %d ", t->item);
 		}
 	}
-
 
 	/* Printing the name of the ID */
 	if (t->nodeIdentifier < 0 || t->nodeIdentifier > sizeof(NodeName))
@@ -557,22 +561,14 @@ void PrintTree(TREE t)
 		printf("nodeID: %s\n", NodeName[t->nodeIdentifier]);
 
 	//Indetent priniting
-	for (int i = 0; i < spaceCount; i++)
-	{
-		printf("  ");
-	}
+	printf("|");
+	for (int i = 0; i < indent; i++) printf(" ");
 
-	/*The ident works by incrementing until it reaches a terminator then resets
-	  it just shows a very basic relationship*/
-	if(t->first == NULL && t->forth == NULL)
-		spaceCount = 0; 
-	else
-		spaceCount++;
-	
-	PrintTree(t->first);
-	PrintTree(t->second);
-	PrintTree(t->third);
-	PrintTree(t->forth);
+	//Prints the rest of the tree sections
+	PrintTree(t->first, indent + INDENTVALUE);
+	PrintTree(t->second, indent + INDENTVALUE);
+	PrintTree(t->third, indent + INDENTVALUE);
+	PrintTree(t->forth, indent + INDENTVALUE);
 }
 
 /* Function that checks if the ID is in the symbol table */
@@ -582,6 +578,12 @@ void ID_CHECK(char *idType, TREE t)
 			printf("%s: %s ", idType, symTab[t->item]->identifier);
 		else
 			printf("UNKNOWN ID: %d ", t->item);
+}
+
+
+void Code(TREE t)
+{
+
 }
 
 #include "lex.yy.c"
