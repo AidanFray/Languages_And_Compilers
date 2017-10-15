@@ -41,7 +41,6 @@ char *NodeName[] =
 #endif
 
 /* ------------- Parse Tree definition -------------------------- */
-
 struct treeNode {
     int  item;
     int  nodeIdentifier;
@@ -55,8 +54,6 @@ typedef  struct treeNode TREE_NODE;
 typedef  TREE_NODE *TREE;
 
 /* ------------- Forward declarations --------------------------- */
- 
-
 TREE create_node(int,int,TREE,TREE,TREE,TREE);
 int yylex (void);
 void PrintTree(TREE, int);
@@ -64,18 +61,13 @@ void ID_CHECK(char*, TREE);
 void Code(TREE);
 
 /* ------------- Symbol table definition ----------------------- */
-
 struct symTabNode {
     char identifier[IDLENGTH];
 };
-
 typedef  struct symTabNode SYMTABNODE;
 typedef  SYMTABNODE        *SYMTABNODEPTR;
-
 SYMTABNODEPTR  symTab[SYMTABSIZE]; 
-
 int currentSymTabSize = 0;
-
 %}
 
 %start  program
@@ -190,6 +182,8 @@ program :
 			#ifdef DEBUG
 			PrintTree(ParseTree, 0);
 			#endif
+
+			Code(ParseTree);
 		}
 		;	
 	
