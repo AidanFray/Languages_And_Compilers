@@ -16,11 +16,16 @@ delim       [ \t\n\r]
 ws          {delim}+
 letter      [A-Za-z]
 digit       [0-9]
+char        '{letter}'
 id          {letter}({letter}|{digit})*
 number      {digit}+
 	
 %%
-			
+		
+{ws}        ; /* white space, do nothing */
+
+{char}      TOKEN(CHAR)	
+
 			/* --------------------------KEYWORDS------------------------ */
 DECLARATIONS TOKEN(DECLARATIONS)
 ENDP		TOKEN(ENDP)
@@ -90,19 +95,17 @@ INTEGER		TOKEN(INTEGER)
 REAL		TOKEN(REAL)
 			/* ---------------------------------------------------------- */
 
-	
-
-{ws}        ; /* white space, do nothing */
 {id}        {
 				yylval.iVal = installId(yytext);
 				TOKEN(ID)
 			}
+
 {number}    {
 				yylval.iVal = atoi(yytext);
 				TOKEN(NUMBER)
 			}
 
-
+            //Rule for every thing
 .           printf("Error: Unexpected symbol in spl.l: %s (%d)\n", yytext, yytext[0]);
 %%
 	

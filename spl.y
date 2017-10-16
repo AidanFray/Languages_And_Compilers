@@ -65,7 +65,7 @@ struct symTabNode {
     char identifier[IDLENGTH];
 };
 typedef  struct symTabNode SYMTABNODE;
-typedef  SYMTABNODE        *SYMTABNODEPTR;
+typedef  SYMTABNODE *SYMTABNODEPTR;
 SYMTABNODEPTR  symTab[SYMTABSIZE]; 
 int currentSymTabSize = 0;
 %}
@@ -108,6 +108,7 @@ int currentSymTabSize = 0;
 %token<iVal>
 	ID
 	NUMBER
+	CHAR
 
 %token 
 	DECLARATIONS
@@ -466,9 +467,9 @@ constant :
 		;
 	
 character_constant : 
-		SINGLE_QUOTE ID SINGLE_QUOTE
+		CHAR
 		{
-			$$ = create_node($2, LITERAL_CHAR_CONSTANT, NULL, NULL, NULL, NULL);			
+			$$ = create_node($1, LITERAL_CHAR_CONSTANT, NULL, NULL, NULL, NULL);			
 		}
 		;
 	
@@ -543,6 +544,9 @@ void PrintTree(TREE t, int indent)
 			case DECLARATION_IDENTIFIER:
 				ID_CHECK("DECLARATION ID", t);
 				break;
+			case PROGRAM:
+				ID_CHECK("PROGRAM", t);
+				break;
 			default:
 				printf("ITEM: %d ", t->item);
 		}
@@ -568,7 +572,7 @@ void PrintTree(TREE t, int indent)
 /* Function that checks if the ID is in the symbol table */
 void ID_CHECK(char *idType, TREE t)
 {
-		if (t->item > 0 && t->item < SYMTABSIZE)
+		if (t->item >= 0 && t->item < SYMTABSIZE)
 			printf("%s: %s ", idType, symTab[t->item]->identifier);
 		else
 			printf("UNKNOWN ID: %d ", t->item);

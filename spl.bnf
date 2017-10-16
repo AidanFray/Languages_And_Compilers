@@ -2,15 +2,14 @@
 			<identifier> ":" <block> ENDP <identifier> "."
 
 <block> ::= 
-			<block_complete> 
+			DECLARATION <declaration_block> CODE <statment_list>
 			| CODE <statment_list>
 
-<block_complete> ::= 
-			DECLARATION <declaration_block> CODE <statment_list>
 
 <declaration_identifier> ::= 
 			<identifier> 
 			| <identifier> "," <declaration_identifier>
+
 <declaration_block> ::= 
 			<declaration_identifier> OF TYPE <type> ";" 
 			| <declaration_identifier> OF TYPE <type> ";" <declaration_block>
@@ -62,16 +61,13 @@
 
 
 <conditional> ::= 
-			<conditional_body> 
-			| <conditional_body> AND <conditional> 
-			| <conditional_body> OR <conditional>
+			<expression> <comparator> <expression>
+			| NOT <conditional_body> 
+			| <expression> <comparator> <expression> AND <conditional> 
+			|<expression> <comparator> <expression> OR <conditional>
 
 <conditional_body> ::= 
-			<not> <expression> <comparator> <expression>
-
-<not> ::= 
-			NOT | NOT <not>
-
+			<expression> <comparator> <expression>
 
 <comparator> ::= 
 			"="
