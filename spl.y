@@ -13,7 +13,7 @@
 enum ParseTreeNodeType_RULE 
 { 
 	PROGRAM, BLOCK,DECLARATION_IDENTIFIER,DECLARATION_BLOCK,TYPE_RULE,STATEMENT_LIST,STATEMENT,
-	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
+	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,IF_ELSE_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
 	FOR_STATEMENT,WRITE_STATEMENT,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_BODY,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
 	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT
@@ -22,7 +22,7 @@ enum ParseTreeNodeType_RULE
 char *NodeName[] = 
 {
 	"PROGRAM", "BLOCK","DECLARATION_IDENTIFIER","DECLARATION_BLOCK","TYPE_RULE","STATEMENT_LIST","STATEMENT",
-	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
+	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","IF_ELSE_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
 	"FOR_STATEMENT","WRITE_STATEMENT","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL","CONDITIONAL_BODY","NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
 	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT"
@@ -292,7 +292,7 @@ if_statement :
 		}
 		| IF conditional THEN statement_list ELSE statement_list ENDIF
 		{
-			$$ = create_node(NOTHING, IF_STATEMENT, $2, $4, $6, NULL);
+			$$ = create_node(NOTHING, IF_ELSE_STATEMENT, $2, $4, $6, NULL);
 		}
 		;
 	
@@ -586,39 +586,77 @@ void Code(TREE t)
 	switch (t->nodeIdentifier)
 	{
 		//PROGRAM DESIGN
-		case (PROGRAM):
+		case PROGRAM:
 			printf("int main(void) {\n");
 			Code(t->first);
 			printf("}");
 			return;
-		case (BLOCK)
-			//TODO
-			return;
-		case (DECLARATION_IDENTIFIER)
+		case BLOCK:
 			Code(t->first);
-			printf(",")
+			Code(t->second);
+			return;
+		case DECLARATION_IDENTIFIER:
+			Code(t->first);
+			printf(",");
 			Code(t->second);
 		 	return;
-		case (DECLARATION_BLOCK)
+		case DECLARATION_BLOCK:
 			Code(t->second);
 			printf(" ");
-			code(t->first);
+			Code(t->first);
 			printf(";\n");
-			code(t->third);
+			Code(t->third);
 			return;
 
 		//TYPES
-		case (CHARACTER_VALUE)
+		case CHARACTER_VALUE:
 			printf("char ");
 			return;
-		case (INTEGER_VALUE)
+		case INTEGER_VALUE:
 			printf("int ");
 			return;
-		case (REAL_VALUE)
+		case REAL_VALUE:
 			printf("double ");
 			return;
 		
+		//STATEMENT LISTS
+		case STATEMENT_LIST:
+			Code(t->first);
+			printf(";\n");
+			Code(t->second);
+			return;
+		case ASSIGNMENT_STATEMENT:
+			Code(t->second);
+			printf(" = ");
+			Code(t->first);
+			return;
 
+		case IF_STATEMENT:
+			printf("if (");
+			Code(t->first);
+			printf(") \n{\n\t");
+			Code(t->second);
+			printf("\n}\n\t");		
+			return;
+
+		case IF_ELSE_STATEMENT:
+			printf("if (");
+			Code(t->first);
+			printf(") \n{\n\t");
+			Code(t->second);
+			printf("\n}\n");
+			printf("else {\n\t");
+			Code(t->third);
+			printf("\n}\n");
+			return;
+
+		case DO_STATEMENT:
+			printf("do {\n\t");
+			Code(t->first);
+			printf("\n} while(");
+			Code(t->second);
+			printf(");");
+			return;
 	}
 
 	Code(t->first);
