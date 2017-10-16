@@ -1,94 +1,133 @@
-<program> ::= <identifier> ":" <block> ENDP <identifier> "."
+<program> ::= 
+			<identifier> ":" <block> ENDP <identifier> "."
 
-<block> ::= <block_complete> 
-				| CODE <statment_list>
-<block_complete> ::= DECLARATION <declaration_block> CODE <statment_list>
+<block> ::= 
+			<block_complete> 
+			| CODE <statment_list>
 
-<declaration_identifier> ::= <identifier> 
-				| <identifier> "," <declaration_identifier>
-<declaration_block> ::= <declaration_identifier> OF TYPE <type> ";" 
-				| <declaration_identifier> OF TYPE <type> ";" <declaration_block>
+<block_complete> ::= 
+			DECLARATION <declaration_block> CODE <statment_list>
 
-<type> ::= (CHARACTER 
-				| INTEGER 
-				| REAL)
+<declaration_identifier> ::= 
+			<identifier> 
+			| <identifier> "," <declaration_identifier>
+<declaration_block> ::= 
+			<declaration_identifier> OF TYPE <type> ";" 
+			| <declaration_identifier> OF TYPE <type> ";" <declaration_block>
 
-<statment_list> ::= <statment> 
-				| <statment> ";" | <statment_list>
+<type> ::= 
+			CHARACTER 
+			| INTEGER 
+			| REAL
 
-<statment> ::= <assignment_statment> 
-				| <if_statment> 
-				| <do_statment> 
-				| <while_statment> 
-				| <for_statment> 
-				| <write_statment> 
-				| <read_statment> 
+<statment_list> ::= 
+			<statment> 
+			| <statment> ";" <statment_list>
 
-<assignment_statment> ::= <expression> "->" <identifier>
+<statment> ::= 
+			<assignment_statment> 
+			| <if_statment> 
+			| <do_statment> 
+			| <while_statment> 
+			| <for_statment> 
+			| <write_statment> 
+			| <read_statment> 
 
-<if_statment> ::= IF <condition> THEN <statement> ENDIF
-                | IF <condition> THEN <statement> ELSE <statement> ENDIF
+<assignment_statment> ::= 
+			<expression> "->" <identifier>
 
-<do_statment> ::= DO <statment_list> WHILE <conditional> ENDDO
+<if_statment> ::= 
+			IF <condition> THEN <statement_list> ENDIF
+            | IF <condition> THEN <statement_list> ELSE <statement_list> ENDIF
 
-<while_statment> ::= WHILE <conditional> DO <statment_list> ENDWHILE
+<do_statment> ::= 
+			DO <statment_list> WHILE <conditional> ENDDO
 
-<for_statment> ::= FOR <identifier> IS <expression> BY <expression> TO <expression> DO <expression> ENDFOR
+<while_statment> ::= 
+			WHILE <conditional> DO <statment_list> ENDWHILE
 
-<write_statment> ::= NEWLINE | WRITE "("<output_list>")" 
+<for_statment> ::= 
+			FOR <identifier> IS <expression> BY <expression> TO <expression> DO <expression> ENDFOR
 
-<read_statment> ::= READ (identifier)
+<write_statment> ::= 
+			NEWLINE 
+			| WRITE "("<output_list>")" 
 
-<output_list> ::= <value> | <value> "," <output_list>
+<read_statment> ::= 
+			READ "("<identifier>")"
+
+<output_list> ::= 
+			<value> 
+			| <value> "," <output_list>
 
 
-<conditional> ::= <conditional_body> 
-				| <conditional_body> AND <conditional> 
-				| <conditional_body> OR <conditional>
-<conditional_body> ::= <not> <expression> <comparator> <expression>
-<not> ::= NOT | NOT <not>
+<conditional> ::= 
+			<conditional_body> 
+			| <conditional_body> AND <conditional> 
+			| <conditional_body> OR <conditional>
+
+<conditional_body> ::= 
+			<not> <expression> <comparator> <expression>
+
+<not> ::= 
+			NOT | NOT <not>
 
 
-<comparator> ::= "="
-				|"<>"
-				|"<"
-				|">"
-				|"<="
-				|">="
+<comparator> ::= 
+			"="
+			|"<>"
+			|"<"
+			|">"
+			|"<="
+			|">="
 				
-<expression> ::= <term> 
-				| <term> "+" <expression> 
-				| <term> "-" <expression>
+<expression> ::= 
+			<term> 
+			| <term> "+" <expression> 
+			| <term> "-" <expression>
 
-<term> ::= <value> 
-				| <value> "*" <term>
-				| <value> "/" <term>
+<term> ::= 
+			<value> 
+			| <value> "*" <term>
+			| <value> "/" <term>
 
-<value> ::= <identifier> 
-				| <constant> 
-				| "("<expression>")"
+<value> ::= 
+			<identifier> 
+			| <constant> 
+			| "("<expression>")"
 			
-<constant> ::= <number_constant> 
-				| <character_constant>
+<constant> ::= 
+			<number_constant> 
+			| <character_constant>
 
-<character_constant> ::= "'" <character> "'"
+<character_constant> ::= 
+			"'" <character> "'"
 
-<number_constant> ::= "-" <any_digit> "." <any_digit>
-				| <any_digit> "." <any_digit>
-				| "-" <any_digit>
-				| <any_digit>
+<number_constant> ::= 
+			"-" <any_digit> "." <any_digit>
+			| <any_digit> "." <any_digit>
+			| "-" <any_digit>
+			| <any_digit>
 
-<identifier> ::= <character> <identifier_member>
-<identifier_member> ::= <any_character> 
-				| <any_character> <identifier_member> 
-				|<any_digit> 
-				|<any_digit> <identifier_member>
+<identifier> ::= 
+			<character> <identifier_member>
 
-<any_digit> ::= <digit> | <digit> <any_digit>
-<any_character> ::= <character><any_character>
+<identifier_member> ::= 
+			<any_character> 
+			| <any_character> <identifier_member> 
+			|<any_digit> 
+			|<any_digit> <identifier_member>
+
+<any_digit> ::= 
+			<digit> 
+			| <digit> <any_digit>
+			
+<any_character> ::= 
+			<character><any_character>
 
 <character> ::= 
-			  "a"| "b"| "c"| "d"| "e"| "f"| "g"| "h"| "i"| "j"| "k"| "l"| "m"| "n"| "o"| "p"| "q"| "r"| "s"| "t"| "u"| "v"| "w"| "x"| "y"| "z" |
-			  "A"| "B"| "C"| "D"| "E"| "F"| "G"| "H"| "I"| "J"| "K"| "L"| "M"| "N"| "O"| "P"| "Q"| "R"| "S"| "T"| "U"| "V"| "W"| "X"| "Y"| "Z"
+			"a"| "b"| "c"| "d"| "e"| "f"| "g"| "h"| "i"| "j"| "k"| "l"| "m"| "n"| "o"| "p"| "q"| "r"| "s"| "t"| "u"| "v"| "w"| "x"| "y"| "z" |
+			"A"| "B"| "C"| "D"| "E"| "F"| "G"| "H"| "I"| "J"| "K"| "L"| "M"| "N"| "O"| "P"| "Q"| "R"| "S"| "T"| "U"| "V"| "W"| "X"| "Y"| "Z"
 			
-<digit> ::= 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0
+<digit> ::= 
+			0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
