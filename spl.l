@@ -105,7 +105,6 @@ REAL		TOKEN(REAL)
 				TOKEN(NUMBER)
 			}
 
-            //Rule for every thing
 .           printf("Error: Unexpected symbol in spl.l: %s (%d)\n", yytext, yytext[0]);
 %%
 	

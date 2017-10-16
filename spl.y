@@ -581,7 +581,50 @@ void ID_CHECK(char *idType, TREE t)
 
 void Code(TREE t)
 {
+	if (t == NULL) return; 
 
+	switch (t->nodeIdentifier)
+	{
+		//PROGRAM DESIGN
+		case (PROGRAM):
+			printf("int main(void) {\n");
+			Code(t->first);
+			printf("}");
+			return;
+		case (BLOCK)
+			//TODO
+			return;
+		case (DECLARATION_IDENTIFIER)
+			Code(t->first);
+			printf(",")
+			Code(t->second);
+		 	return;
+		case (DECLARATION_BLOCK)
+			Code(t->second);
+			printf(" ");
+			code(t->first);
+			printf(";\n");
+			code(t->third);
+			return;
+
+		//TYPES
+		case (CHARACTER_VALUE)
+			printf("char ");
+			return;
+		case (INTEGER_VALUE)
+			printf("int ");
+			return;
+		case (REAL_VALUE)
+			printf("double ");
+			return;
+		
+
+	}
+
+	Code(t->first);
+	Code(t->second);
+	Code(t->third);
+	Code(t->forth);
 }
 
 #include "lex.yy.c"

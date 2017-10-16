@@ -20,10 +20,10 @@
 			| REAL
 
 <statment_list> ::= 
-			<statment> 
-			| <statment> ";" <statment_list>
+			<statement> 
+			| <statement> ";" <statment_list>
 
-<statment> ::= 
+<statement> ::= 
 			<assignment_statment> 
 			| <if_statment> 
 			| <do_statment> 
