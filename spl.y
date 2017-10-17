@@ -14,7 +14,7 @@ enum ParseTreeNodeType_RULE
 { 
 	PROGRAM, BLOCK,DECLARATION_IDENTIFIER,DECLARATION_BLOCK,TYPE_RULE,STATEMENT_LIST,STATEMENT,
 	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,IF_ELSE_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
-	FOR_STATEMENT,WRITE_STATEMENT,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_BODY,NOT_VALUE,
+	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_BODY,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
 	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT
 };  
@@ -23,7 +23,7 @@ char *NodeName[] =
 {
 	"PROGRAM", "BLOCK","DECLARATION_IDENTIFIER","DECLARATION_BLOCK","TYPE_RULE","STATEMENT_LIST","STATEMENT",
 	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","IF_ELSE_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
-	"FOR_STATEMENT","WRITE_STATEMENT","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL","CONDITIONAL_BODY","NOT_VALUE",
+	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL","CONDITIONAL_BODY","NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
 	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT"
 };
@@ -324,7 +324,7 @@ write_statement :
 		}
 		| NEWLINE
 		{
-			$$ = create_node(NOTHING, WRITE_STATEMENT, NULL, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, WRITE_STATEMENT_NEWLINE, NULL, NULL, NULL, NULL);
 		}
 		;
 	
@@ -655,7 +655,54 @@ void Code(TREE t)
 			Code(t->first);
 			printf("\n} while(");
 			Code(t->second);
-			printf(");");
+			printf(");\n");
+			return;
+
+		case WHILE_STATEMENT:
+			printf("while (");
+			Code(t->first);
+			printf(") {\n\t");
+			Code(t->second);
+			printf("\n}\n");
+			return;
+
+		case FOR_STATEMENT:
+
+			//for(a = 3;
+			printf("for (");
+			Code(t->first);
+			Code(t->second);
+			//printf("; ");
+
+			//a < XX;
+			Code(t->first);
+			printf(" < ");
+			Code(t->third);
+			printf("; ");
+
+			//a++) {
+			Code(t->first);
+			printf("++;) {\n\t");
+			Code(t->forth);
+		
+			//}
+			printf("\n}\n");
+			return;
+
+		case WRITE_STATEMENT:
+			printf("printf(");
+			Code(t->first);
+			printf(");\n");
+			return;
+
+		case WRITE_STATEMENT_NEWLINE:
+			printf("printf(\"\n\");");
+			return;
+
+		case READ_STATEMENT:
+			printf("scanf(\"%s\", ");
+			Code(t->first);
+			printf(");\n");
 			return;
 	}
 
