@@ -5,11 +5,13 @@
 #define TOKEN(t) return(t);
 #endif
 
+#ifndef PRINT 
 /* SYMBOL TABLE */
 #include <string.h>
 extern SYMTABNODEPTR symTab[SYMTABSIZE];
 extern int currentSymTabSize;
 int installId(char *);
+#endif
 %}
 	
 delim       [ \t\n\r]
@@ -96,18 +98,26 @@ REAL		TOKEN(REAL)
 			/* ---------------------------------------------------------- */
 
 {id}        {
+                #ifndef PRINT
 				yylval.iVal = installId(yytext);
+                #endif
+
 				TOKEN(ID)
+                
 			}
 
 {number}    {
+                #ifndef PRINT
 				yylval.iVal = atoi(yytext);
+                #endif
+
 				TOKEN(NUMBER)
 			}
 
 .           printf("Error: Unexpected symbol in spl.l: %s (%d)\n", yytext, yytext[0]);
 %%
-	
+
+#ifndef PRINT	
 SYMTABNODEPTR newSymTabNode()
 {
     return ((SYMTABNODEPTR)malloc(sizeof(SYMTABNODE)));
@@ -158,3 +168,4 @@ int installId(char *id)
        return(currentSymTabSize++);
     }
 }
+#endif

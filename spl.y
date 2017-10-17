@@ -1,7 +1,8 @@
 %{
-#include "spl.c"
 #include <stdio.h>
 #include <stdlib.h>
+
+void yyerror(const char *s);
 
 /* These constants are used later in the code */
 #define SYMTABSIZE     50
@@ -182,9 +183,11 @@ program :
 			/*Prints the tree*/
 			#ifdef DEBUG
 			PrintTree(ParseTree, 0);
-			#endif
+			#endif	
 
-			Code(ParseTree);
+			#ifndef DEBUG
+			Code(ParseTree)
+			#endif
 		}
 		;	
 	
@@ -700,7 +703,8 @@ void Code(TREE t)
 			return;
 
 		case READ_STATEMENT:
-			printf("scanf(\"%s\", ");
+			//TODO: Why was this breaking shit?
+			//printf("scanf(\"%s\", ");
 			Code(t->first);
 			printf(");\n");
 			return;

@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 int yyparse();
-int yylex();
+//int yylex();
+void yyerror(char *s);
 
 int main(void)
 {
