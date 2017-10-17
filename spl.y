@@ -15,7 +15,8 @@ enum ParseTreeNodeType_RULE
 { 
 	PROGRAM, BLOCK,DECLARATION_IDENTIFIER,DECLARATION_BLOCK,TYPE_RULE,STATEMENT_LIST,STATEMENT,
 	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,IF_ELSE_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
-	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_BODY,NOT_VALUE,
+	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
+	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
 	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT
 };  
@@ -24,7 +25,8 @@ char *NodeName[] =
 {
 	"PROGRAM", "BLOCK","DECLARATION_IDENTIFIER","DECLARATION_BLOCK","TYPE_RULE","STATEMENT_LIST","STATEMENT",
 	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","IF_ELSE_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
-	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL","CONDITIONAL_BODY","NOT_VALUE",
+	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
+	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
 	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT"
 };
@@ -96,7 +98,6 @@ int currentSymTabSize = 0;
 	output_list
 	conditional
 	conditional_body
-	not
 	comparator
 	expression
 	term
@@ -356,34 +357,23 @@ conditional :
 		}
 		| conditional_body AND conditional 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL, $1, $3, NULL, NULL);			
+			$$ = create_node(NOTHING, CONDITIONAL_AND, $1, $3, NULL, NULL);			
 			
 		}
 		| conditional_body OR conditional
 		{
-			$$ = create_node(NOTHING, CONDITIONAL, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, CONDITIONAL_OR, $1, $3, NULL, NULL);		
 		}
 		;
 	
 conditional_body : 
-		not expression comparator expression 
+		NOT expression comparator expression 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_BODY, $1, $2, $3, $4);			
+			$$ = create_node(NOTHING, CONDITIONAL_BODY_NOT, $2, $3, $4, NULL);			
 		}
 		| expression comparator expression
 		{
 			$$ = create_node(NOTHING, CONDITIONAL_BODY, $1, $2, $3, NULL);
-		}
-		;
-	
-not : 
-		NOT
-		{
-			$$ = create_node(NOTHING, NOT_VALUE, NULL, NULL, NULL, NULL);
-		} 
-		| NOT not
-		{
-			$$ = create_node(NOTHING, NOT_VALUE, $2, NULL, NULL, NULL);			
 		}
 		;
 	
@@ -509,8 +499,7 @@ any_digit :
 %%
 
 /* Code for routines for managing the Parse Tree */
-TREE create_node(int ival, int case_identifier,  
-TREE p1,TREE  p2,TREE  p3, TREE p4)
+TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3, TREE p4)
 {
      
 	TREE t;
@@ -699,15 +688,80 @@ void Code(TREE t)
 			return;
 
 		case WRITE_STATEMENT_NEWLINE:
-			printf("printf(\"\n\");");
+			printf("printf(\"\\n\");\n");
 			return;
 
 		case READ_STATEMENT:
-			//TODO: Why was this breaking shit?
-			//printf("scanf(\"%s\", ");
+			printf("scanf(%%s, ");
 			Code(t->first);
 			printf(");\n");
 			return;
+
+		case OUTPUT_LIST:
+			Code(t->first);
+			Code(t->second);
+			return;
+
+		case CONDITIONAL:
+			Code(t->first);
+			return;
+
+		case CONDITIONAL_AND:
+			Code(t->first);
+			printf(" && ");
+			Code(t->second);
+			return;
+
+		case CONDITIONAL_OR:
+			Code(t->first);
+			printf(" || ");
+			Code(t->second);
+			return;
+
+		case CONDITIONAL_BODY_NOT:
+			printf("!(");
+			Code(t->first);
+			printf(" ");
+			Code(t->second);
+			printf(" ");
+			Code(t->third);			
+			printf(")\n");
+			return;
+
+		case CONDITIONAL_BODY:
+			Code(t->first);
+			Code(t->second);
+			Code(t->third);		
+			return;
+
+		case COMPARATOR:
+			if (t->item == ET)
+				printf(" == ");
+			else if (t->item == NET)
+				printf(" != ");
+			else if (t->item == LT)
+				printf(" < ");
+			else if (t->item == ELT)
+				printf(" <= ");
+			else if (t->item == GT)
+				printf(" > ");
+			else if (t->item == EGT)
+				printf(" >= ");
+		
+		case EXPRESSION:
+			Code(t->first);
+			return;
+		
+		case PLUS_EXPRESSION:
+			Code(t->first);
+			printf(" + ");
+			Code(t->second);
+			return;
+
+		case MINUS_EXPRESSION:
+			Code(t->first);
+			printf(" - ");
+			Code(t->second);
 	}
 
 	Code(t->first);
