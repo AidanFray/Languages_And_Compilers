@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void yyerror(const char *s);
 
@@ -18,7 +19,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION
 };  
 
 char *NodeName[] = 
@@ -28,7 +29,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION"
 };
 
 #ifndef TRUE
@@ -103,7 +104,6 @@ int currentSymTabSize = 0;
 	term
 	value
 	constant
-	character_constant
 	number_constant
 	any_digit
 
@@ -444,7 +444,7 @@ value : ID
 		}
 		| BRA expression KET
 		{
-			$$ = create_node(NOTHING, VALUE, $2, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, VALUE_EXPRESION, $2, NULL, NULL, NULL);	
 		}
 		;
 	
@@ -453,16 +453,9 @@ constant :
 		{
 			$$ = create_node(NOTHING, NUMBER_CONSTANT, $1, NULL, NULL, NULL);	
 		}
-		| character_constant
+		| CHAR
 		{
-			$$ = create_node(NOTHING, CHAR_CONSTANT, $1, NULL, NULL, NULL);
-		}
-		;
-	
-character_constant : 
-		CHAR
-		{
-			$$ = create_node($1, LITERAL_CHAR_CONSTANT, NULL, NULL, NULL, NULL);			
+			$$ = create_node($1, CHAR_CONSTANT, NULL, NULL, NULL, NULL);
 		}
 		;
 	
@@ -501,9 +494,8 @@ any_digit :
 /* Code for routines for managing the Parse Tree */
 TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3, TREE p4)
 {
-     
 	TREE t;
-	t =  (TREE)malloc(sizeof(TREE_NODE));
+	t = (TREE)malloc(sizeof(TREE_NODE));
 	t->item = ival;
 	t->nodeIdentifier = case_identifier;
 	t->first = p1;
@@ -762,6 +754,45 @@ void Code(TREE t)
 			Code(t->first);
 			printf(" - ");
 			Code(t->second);
+			return;
+
+		case TERM:
+			Code(t->first);
+			return;
+
+		case TIMES_TERM:
+			Code(t->first);
+			printf(" * ");
+			Code(t->second);
+			return;
+		
+		case DIVIDE_TERM:
+			Code(t->first);
+			printf(" / ");
+			Code(t->second);
+			return;
+
+		case VALUE:
+			if (t->first != NULL)
+				Code(t->first);
+			else
+				//Prints the variable ID from the symbol table
+				printf("%s", symTab[t->item]->identifier);
+			return;
+		
+		case VALUE_EXPRESION:
+			printf("(");
+			Code(t->first);
+			printf(")");
+			return;
+
+		case NUMBER_CONSTANT:
+			Code(t->first);
+			return;
+	
+		case CHAR_CONSTANT:	
+			printf(&symTab[t->item]->identifier[1]);
+			return;
 	}
 
 	Code(t->first);

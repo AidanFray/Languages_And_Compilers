@@ -1,4 +1,5 @@
 %{
+
 #ifdef PRINT
 #define TOKEN(t) printf(#t "\n");
 #else
@@ -26,7 +27,14 @@ number      {digit}+
 		
 {ws}        ; /* white space, do nothing */
 
-{char}      TOKEN(CHAR)	
+{char}      {
+                #ifndef PRINT
+				yylval.iVal = installId(yytext);
+                #endif
+
+                TOKEN(CHAR)	
+            }
+
 
 			/* --------------------------KEYWORDS------------------------ */
 DECLARATIONS TOKEN(DECLARATIONS)
