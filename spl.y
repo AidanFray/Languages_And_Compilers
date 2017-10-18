@@ -658,7 +658,7 @@ void Code(TREE t)
 			//CHARACTER
 			if (symTab[t->item]->type_name[0] == 'C')
 			{	
-				printf("scanf(\"%%c\", &" );
+				printf("scanf(\"%%s\", &" );
 			}
 			//NUMBER
 			else 
@@ -686,12 +686,10 @@ void Code(TREE t)
 			{
 				char* type_n = symTab[t->first->item]->type_name;
 				
-
 				//TODO: Make these comparasons stronger
 				if (type_n[0] == 'C')
 				{
 					printf("printf(\"%%c\", ");
-					
 				}
 				else if (type_n[0] == 'I')
 				{
@@ -700,7 +698,6 @@ void Code(TREE t)
 				else if (type_n[0] == 'D')
 				{
 					printf("printf(\"%%lf\", ");
-					
 				}
 			}
 			else
