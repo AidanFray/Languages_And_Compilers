@@ -19,7 +19,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION, NEG_LITERAL_NUMBER_CONSTANT, OUTPUT_LIST_VALUE
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION, NEG_LITERAL_NUMBER_CONSTANT
 };  
 
 char *NodeName[] = 
@@ -29,7 +29,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION", "NEG_LITERAL_NUMBER_CONSTANT", "OUTPUT_LIST_VALUE"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION", "NEG_LITERAL_NUMBER_CONSTANT"
 };
 
 #ifndef TRUE
@@ -67,6 +67,7 @@ void Code(TREE);
 /* ------------- Symbol table definition ----------------------- */
 struct symTabNode {
     char identifier[IDLENGTH];
+	char type_name[10];
 };
 typedef  struct symTabNode SYMTABNODE;
 typedef  SYMTABNODE *SYMTABNODEPTR;
@@ -78,100 +79,19 @@ int currentSymTabSize = 0;
 
 %union {
     int iVal;
-	TREE  tVal;
+	TREE tVal;
 }
 
 %type<tVal>
-	program 
-	block 
-	declaration_identifier 
-	declaration_block 
-	type_rule
-	statement_list 
-	statement 
-	assignment_statement 
-	if_statement
-	do_statement 
-	while_statement 
-	for_statement
-	write_statement
-	read_statement
-	output_list
-	conditional
-	conditional_body
-	comparator
-	expression
-	term
-	value
-	constant
-	number_constant
-	any_digit
+	program block declaration_identifier declaration_block type_rule statement_list statement assignment_statement 	if_statement do_statement while_statement for_statement write_statement
+	read_statement output_list conditional conditional_body comparator expression term value constant number_constant any_digit
 
 %token<iVal>
-	ID
-	NUMBER
-	CHAR
+	ID NUMBER CHAR
 
 %token 
-	DECLARATIONS
-	ENDP
-	CODE
-
-%token
-	IF
-	THEN
-	ELSE
-	ENDIF
-	
-%token
-	WHILE
-	DO
-	ENDDO
-	ENDWHILE
-	
-%token
-	FOR
-	IS
-	BY
-	TO
-	ENDFOR
-	
-%token
-	OF
-	TYPE
-	
-%token
-	COLON
-	SEMICOLON
-	COMMA
-	KET
-	BRA
-	FULLSTOP
-	ASSIGNMENT
-	SINGLE_QUOTE
-	PLUS
-	MINUS
-	DIVIDE
-	TIMES
-	ET
-	NET
-	LT
-	ELT
-	GT
-	EGT
-
-%token
-	CHARACTER
-	INTEGER
-	REAL
-
-%token
-	READ
-	NEWLINE
-	WRITE
-	AND
-	OR
-	NOT
+	DECLARATIONS ENDP CODE IF THEN ELSE ENDIF WHILE DO ENDDO ENDWHILE FOR IS BY TO ENDFOR OF TYPE COLON SEMICOLON COMMA KET BRA FULLSTOP ASSIGNMENT
+	SINGLE_QUOTE PLUS MINUS DIVIDE TIMES ET NET LT ELT GT EGT CHARACTER INTEGER REAL READ NEWLINE WRITE AND OR NOT
 
 %%
 
@@ -222,6 +142,7 @@ declaration_block :
 		| declaration_identifier OF TYPE type_rule SEMICOLON declaration_block
 		{
 			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, $6, NULL);
+	
 		}
 		;
 	
@@ -342,7 +263,7 @@ read_statement :
 output_list : 
 		value 
 		{
-			$$ = create_node(NOTHING, OUTPUT_LIST_VALUE, $1, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, OUTPUT_LIST, $1, NULL, NULL, NULL);	
 		}
 		| value COMMA output_list
 		{
@@ -434,7 +355,8 @@ term :
 		}
 		;
 	
-value : ID 
+value : 
+		ID 
 		{
 			$$ = create_node($1, VALUE, NULL, NULL, NULL, NULL);	
 		}
@@ -490,6 +412,20 @@ any_digit :
 		;
 			
 %%
+
+//Reccursive method used to assign all variables a type
+void AssignAllVariables(TREE t, char* c)
+{
+	if(t->first != NULL)
+	{
+		strncpy(symTab[t->first->item]->type_name, c, 10);
+		AssignAllVariables(t->first, c);
+	}
+	else
+	{
+		return;
+	}
+}
 
 /* Code for routines for managing the Parse Tree */
 TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3, TREE p4)
@@ -579,10 +515,12 @@ void Code(TREE t)
 			Code(t->first);
 			printf("}");
 			return;
+
 		case BLOCK:
 			Code(t->first);
 			Code(t->second);
 			return;
+
 		case DECLARATION_IDENTIFIER:
 			if(t->first == NULL)
 			{
@@ -596,6 +534,20 @@ void Code(TREE t)
 			}
 		 	return;
 		case DECLARATION_BLOCK:
+			//Assigning a type
+			if (t->second->item == CHARACTER_VALUE)
+			{
+				AssignAllVariables(t, "CHAR");
+			}
+			else if(t->second->item == INTEGER_VALUE)
+			{
+				AssignAllVariables(t, "INT");		
+			}
+			else if(t->second->item == REAL_VALUE)
+			{
+				AssignAllVariables(t, "DOUBLE");		
+			}
+			
 			Code(t->second);
 			printf(" ");
 			Code(t->first);
@@ -627,6 +579,7 @@ void Code(TREE t)
 			//printf("\n");
 			Code(t->second);
 			return;
+
 		case ASSIGNMENT_STATEMENT:
 			printf("%s", symTab[t->item]->identifier);
 			Code(t->second);
@@ -693,23 +646,8 @@ void Code(TREE t)
 			printf("\n}\n");
 			return;
 
-		//TODO: Writing statements don't write the value inside the variables!
 		case WRITE_STATEMENT:
-
-			if(t->first->nodeIdentifier == OUTPUT_LIST_VALUE)
-			{
-				printf("printf(");
-				Code(t->first);
-				printf(");\n");
-			}
-			else
-			{
-				printf("printf(\"");
-				Code(t->first);
-				printf("\");\n");
-			}
-
-			
+			Code(t->first);
 			return;
 
 		case WRITE_STATEMENT_NEWLINE:
@@ -717,18 +655,63 @@ void Code(TREE t)
 			return;
 
 		case READ_STATEMENT:
-			printf("scanf(\"%%d\", ");
-			printf("&%s", symTab[t->item]->identifier);
+			//CHARACTER
+			if (symTab[t->item]->type_name[0] == 'C')
+			{	
+				printf("scanf(\"%%c\", &" );
+			}
+			//NUMBER
+			else 
+			if (symTab[t->item]->type_name[0] == 'I')
+			{
+				printf("scanf(\"%%d\", &" );
+			}
+			//DOUBLE
+			else if(symTab[t->item]->type_name[0] == 'D')
+			{
+				printf("scanf(\"%%lf\", &" );
+			}
+			//STRING
+			else
+			{
+				printf("scanf(\"%%s\", &" );				
+			}
+			printf("%s", symTab[t->item]->identifier);
 			printf(");\n");
 			return;
 
 		case OUTPUT_LIST:
-			Code(t->first);
-			Code(t->second);
-			return;
+			//SINGLE VALUE and ID
+			if (t->first->item != NOTHING)
+			{
+				char* type_n = symTab[t->first->item]->type_name;
+				
 
-		case OUTPUT_LIST_VALUE:
+				//TODO: Make these comparasons stronger
+				if (type_n[0] == 'C')
+				{
+					printf("printf(\"%%c\", ");
+					
+				}
+				else if (type_n[0] == 'I')
+				{
+					printf("printf(\"%%d\", ");
+				}
+				else if (type_n[0] == 'D')
+				{
+					printf("printf(\"%%lf\", ");
+					
+				}
+			}
+			else
+			{
+				printf("printf(\"%%s\", ");
+			}
+
 			Code(t->first);
+			printf(");\n");
+			Code(t->second);
+
 			return;
 
 		case CONDITIONAL:
@@ -801,7 +784,6 @@ void Code(TREE t)
 			Code(t->first);
 			printf(" * ");
 			Code(t->second);
-			//printf(";\n");
 			return;
 		
 		case DIVIDE_TERM:
@@ -817,7 +799,7 @@ void Code(TREE t)
 				//Prints the variable ID from the symbol table
 				printf("%s", symTab[t->item]->identifier);
 			return;
-		
+
 		case VALUE_EXPRESION:
 			printf("(");
 			Code(t->first);
@@ -829,19 +811,24 @@ void Code(TREE t)
 			return;
 	
         char* letter;
+		char* total;
 		case CHAR_CONSTANT:	
 
 			//Allocates memory to char *
-			letter = malloc(sizeof(char) * 3);
-
-			//Coppies over the value of the chracter
+			letter = malloc(sizeof(char) * 4);
+			total = malloc(sizeof(char) * 10);
+			
+			//Grabs the letter
 			memcpy(letter, &symTab[t->item]->identifier[1], 1);
 			
-			//Adds a terminating chacters
-			letter[1] = '\0';
+			//Encases it in double quotes
+			total[0] = '\"';
+			total[1] = letter[0];
+			total[2] = '\"';
+			total[3] = '\0';
 			
 			//Prints the chracter
-			printf("%s", letter);
+			printf("%s", total);
 			return;
 
 		case NEG_LITERAL_NUMBER_CONSTANT:

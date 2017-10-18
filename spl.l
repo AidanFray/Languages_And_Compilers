@@ -35,7 +35,6 @@ number      {digit}+
                 TOKEN(CHAR)	
             }
 
-
 			/* --------------------------KEYWORDS------------------------ */
 DECLARATIONS TOKEN(DECLARATIONS)
 ENDP		TOKEN(ENDP)
@@ -169,7 +168,9 @@ int installId(char *id)
           return (NOTHING) ;
     else
     {
+       //Creates a new node
        symTab[currentSymTabSize] = newSymTabNode();
+       
        /* Recommended code for preventing buffer overrun on bounded strings */
        strncpy(symTab[currentSymTabSize]->identifier,id,IDLENGTH);
        symTab[currentSymTabSize]->identifier[IDLENGTH-1] = '\0';
