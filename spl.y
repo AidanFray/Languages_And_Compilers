@@ -19,7 +19,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION, NEG_LITERAL_NUMBER_CONSTANT
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION, NEG_LITERAL_NUMBER_CONSTANT, OUTPUT_LIST_VALUE
 };  
 
 char *NodeName[] = 
@@ -29,7 +29,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION", "NEG_LITERAL_NUMBER_CONSTANT"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION", "NEG_LITERAL_NUMBER_CONSTANT", "OUTPUT_LIST_VALUE"
 };
 
 #ifndef TRUE
@@ -342,7 +342,7 @@ read_statement :
 output_list : 
 		value 
 		{
-			$$ = create_node(NOTHING, OUTPUT_LIST, $1, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, OUTPUT_LIST_VALUE, $1, NULL, NULL, NULL);	
 		}
 		| value COMMA output_list
 		{
@@ -693,11 +693,23 @@ void Code(TREE t)
 			printf("\n}\n");
 			return;
 
-		//TODO: Writing statements down write the value inside the variables!
+		//TODO: Writing statements don't write the value inside the variables!
 		case WRITE_STATEMENT:
-			printf("printf(\"");
-			Code(t->first);
-			printf("\");\n");
+
+			if(t->first->nodeIdentifier == OUTPUT_LIST_VALUE)
+			{
+				printf("printf(");
+				Code(t->first);
+				printf(");\n");
+			}
+			else
+			{
+				printf("printf(\"");
+				Code(t->first);
+				printf("\");\n");
+			}
+
+			
 			return;
 
 		case WRITE_STATEMENT_NEWLINE:
@@ -713,6 +725,10 @@ void Code(TREE t)
 		case OUTPUT_LIST:
 			Code(t->first);
 			Code(t->second);
+			return;
+
+		case OUTPUT_LIST_VALUE:
+			Code(t->first);
 			return;
 
 		case CONDITIONAL:
