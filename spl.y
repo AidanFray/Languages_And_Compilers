@@ -19,7 +19,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESION, NEG_LITERAL_NUMBER_CONSTANT
 };  
 
 char *NodeName[] = 
@@ -29,7 +29,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESION", "NEG_LITERAL_NUMBER_CONSTANT"
 };
 
 #ifndef TRUE
@@ -317,7 +317,7 @@ while_statement :
 for_statement : 
 		FOR ID IS expression BY expression TO expression DO statement_list ENDFOR
 		{	
-			$$ = create_node(NOTHING, FOR_STATEMENT, $4, $6, $8, $10);
+			$$ = create_node($2, FOR_STATEMENT, $4, $6, $8, $10);
 		}
 		;
 	
@@ -462,7 +462,7 @@ constant :
 number_constant : 
 		MINUS any_digit FULLSTOP any_digit
 		{
-			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $2, $4, NULL, NULL);		
+			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, $4, NULL, NULL);		
 		} 
 		| any_digit FULLSTOP any_digit
 		{
@@ -470,7 +470,7 @@ number_constant :
 		}
 		| MINUS any_digit
 		{
-			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $2, NULL, NULL, NULL);					
+			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, NULL, NULL, NULL);					
 		}
 		| any_digit
 		{
@@ -571,7 +571,11 @@ void Code(TREE t)
 	{
 		//PROGRAM DESIGN
 		case PROGRAM:
-			printf("int main(void) {\n");
+			//Includes
+			printf("#include <stdio.h>\n");
+			printf("\n");
+
+			printf("int main(void) \n{\n");
 			Code(t->first);
 			printf("}");
 			return;
@@ -580,9 +584,16 @@ void Code(TREE t)
 			Code(t->second);
 			return;
 		case DECLARATION_IDENTIFIER:
-			Code(t->first);
-			printf(",");
-			Code(t->second);
+			if(t->first == NULL)
+			{
+				printf("%s", symTab[t->item]->identifier);
+			}
+			else
+			{
+				printf("%s", symTab[t->item]->identifier);
+				printf(",");
+				Code(t->first);
+			}
 		 	return;
 		case DECLARATION_BLOCK:
 			Code(t->second);
@@ -593,26 +604,35 @@ void Code(TREE t)
 			return;
 
 		//TYPES
-		case CHARACTER_VALUE:
-			printf("char ");
-			return;
-		case INTEGER_VALUE:
-			printf("int ");
-			return;
-		case REAL_VALUE:
-			printf("double ");
-			return;
+		case TYPE_RULE:
+			if(t->item == CHARACTER_VALUE)
+			{
+				printf("char");
+				return;
+			}
+			else if (t->item == INTEGER_VALUE)
+			{
+				printf("int");
+				return;
+			}
+			else if (t->item == REAL_VALUE)
+			{
+				printf("double");
+				return;
+			}
 		
 		//STATEMENT LISTS
 		case STATEMENT_LIST:
 			Code(t->first);
-			printf(";\n");
+			//printf("\n");
 			Code(t->second);
 			return;
 		case ASSIGNMENT_STATEMENT:
+			printf("%s", symTab[t->item]->identifier);
 			Code(t->second);
 			printf(" = ");
 			Code(t->first);
+			printf(";\n");
 			return;
 
 		case IF_STATEMENT:
@@ -626,16 +646,16 @@ void Code(TREE t)
 		case IF_ELSE_STATEMENT:
 			printf("if (");
 			Code(t->first);
-			printf(") \n{\n\t");
+			printf(") \n{\n");
 			Code(t->second);
 			printf("\n}\n");
-			printf("else {\n\t");
+			printf("else \n{\n");
 			Code(t->third);
 			printf("\n}\n");
 			return;
 
 		case DO_STATEMENT:
-			printf("do {\n\t");
+			printf("do {\n");
 			Code(t->first);
 			printf("\n} while(");
 			Code(t->second);
@@ -645,38 +665,39 @@ void Code(TREE t)
 		case WHILE_STATEMENT:
 			printf("while (");
 			Code(t->first);
-			printf(") {\n\t");
+			printf(") {\n");
 			Code(t->second);
 			printf("\n}\n");
 			return;
 
 		case FOR_STATEMENT:
-
 			//for(a = 3;
 			printf("for (");
+			printf("%s", symTab[t->item]->identifier); //ID
+			printf(" = ");
 			Code(t->first);
-			Code(t->second);
-			//printf("; ");
+			printf("; ");
 
 			//a < XX;
-			Code(t->first);
+			printf("%s", symTab[t->item]->identifier); //ID			
 			printf(" < ");
 			Code(t->third);
 			printf("; ");
 
 			//a++) {
-			Code(t->first);
-			printf("++;) {\n\t");
+			printf("%s", symTab[t->item]->identifier); //ID			
+			printf("++) {\n");
 			Code(t->forth);
 		
 			//}
 			printf("\n}\n");
 			return;
 
+		//TODO: Writing statements down write the value inside the variables!
 		case WRITE_STATEMENT:
-			printf("printf(");
+			printf("printf(\"");
 			Code(t->first);
-			printf(");\n");
+			printf("\");\n");
 			return;
 
 		case WRITE_STATEMENT_NEWLINE:
@@ -684,8 +705,8 @@ void Code(TREE t)
 			return;
 
 		case READ_STATEMENT:
-			printf("scanf(%%s, ");
-			Code(t->first);
+			printf("scanf(\"%%d\", ");
+			printf("&%s", symTab[t->item]->identifier);
 			printf(");\n");
 			return;
 
@@ -717,7 +738,7 @@ void Code(TREE t)
 			Code(t->second);
 			printf(" ");
 			Code(t->third);			
-			printf(")\n");
+			printf(")");
 			return;
 
 		case CONDITIONAL_BODY:
@@ -764,6 +785,7 @@ void Code(TREE t)
 			Code(t->first);
 			printf(" * ");
 			Code(t->second);
+			//printf(";\n");
 			return;
 		
 		case DIVIDE_TERM:
@@ -790,8 +812,61 @@ void Code(TREE t)
 			Code(t->first);
 			return;
 	
+        char* letter;
 		case CHAR_CONSTANT:	
-			printf(&symTab[t->item]->identifier[1]);
+
+			//Allocates memory to char *
+			letter = malloc(sizeof(char) * 3);
+
+			//Coppies over the value of the chracter
+			memcpy(letter, &symTab[t->item]->identifier[1], 1);
+			
+			//Adds a terminating chacters
+			letter[1] = '\0';
+			
+			//Prints the chracter
+			printf("%s", letter);
+			return;
+
+		case NEG_LITERAL_NUMBER_CONSTANT:
+			if (t->second == NULL)
+			{
+				printf("-");
+				Code(t->first);
+			}
+			else
+			{
+				printf("-");
+				Code(t->first);
+				printf(".");
+				Code(t->second);
+
+			}
+			return;
+
+		case LITERAL_NUMBER_CONSTANT:
+			if(t->second == NULL)
+			{
+				Code(t->first);		
+			}
+			else
+			{
+				Code(t->first);
+				printf(".");
+				Code(t->second);
+			}
+			return;
+
+		case ANY_DIGIT:
+			if(t->first == NULL)
+			{
+				printf("%d", t->item);
+			}
+			else
+			{
+				printf("%d", t->item);
+				Code(t->first);
+			}
 			return;
 	}
 
