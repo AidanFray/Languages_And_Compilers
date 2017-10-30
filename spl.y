@@ -18,7 +18,7 @@ enum ParseTreeNodeType_RULE
 	CHARACTER_VALUE,INTEGER_VALUE,REAL_VALUE,ASSIGNMENT_STATEMENT,IF_STATEMENT,IF_ELSE_STATEMENT,DO_STATEMENT,WHILE_STATEMENT,
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
-	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE,NUMBER_CONSTANT,
+	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE, VALUE_ID,NUMBER_CONSTANT,
 	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT
 };  
 
@@ -28,7 +28,7 @@ char *NodeName[] =
 	"CHARACTER_VALUE","INTEGER_VALUE","REAL_VALUE","ASSIGNMENT_STATEMENT","IF_STATEMENT","IF_ELSE_STATEMENT","DO_STATEMENT","WHILE_STATEMENT",
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
-	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE","NUMBER_CONSTANT",
+	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE" ,"VALUE_ID","NUMBER_CONSTANT",
 	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT"
 };
 
@@ -358,7 +358,7 @@ term :
 value : 
 		ID 
 		{
-			$$ = create_node($1, VALUE, NULL, NULL, NULL, NULL);	
+			$$ = create_node($1, VALUE_ID, NULL, NULL, NULL, NULL);	
 		}
 		| constant 
 		{
@@ -458,7 +458,7 @@ void PrintTree(TREE t, int indent)
 			case ANY_DIGIT:
 				printf("NUMBER: %d ", t->item);
 				break;
-			case VALUE:
+			case VALUE_ID:
 				ID_CHECK("ID", t);
 				break;
 			case DECLARATION_IDENTIFIER:
@@ -610,44 +610,57 @@ void Code(TREE t)
 			Code(t->second);
 			printf("\n}\n");
 			return;
-
+		char* loopID;
 		case FOR_STATEMENT:
-			//for(a = 3;
-			printf("for (");
-			printf("%s", symTab[t->item]->identifier); //ID
-			printf(" = ");
-			Code(t->first);
-			printf("; ");
-
 			//ID
-			printf("%s", symTab[t->item]->identifier);	
+			loopID = symTab[t->item]->identifier;
 
-			//Used to see if the value is going from negative to negative
-			//FROM
-			int backwards = 0; //Used to flag if the for loop is to iterate backwards or forwards
-			if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
+			//for_statement -> expression -> term.nodeIdentifier
+			int nodeType_SecondBranch = t->second->first->nodeIdentifier;
+
+			int backwards = 0;
+			if (nodeType_SecondBranch == TERM)
 			{
-				//TO
+				//Checks if it's a backwards loop
+				//Used to flag if the for loop is to iterate backwards or forwards
 				if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
 				{
-					backwards = 1;
+					//TO
+					if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
+					{
+						backwards = 1;
+					}
 				}
 			}
+			
+			//for(a = XX;
+			printf("for (");
+			printf("%s", loopID); 
+			printf(" = ");
+			Code(t->first);
+			printf("; ");	
+			//a > XX;
+			printf("%s", loopID);
 
-			//<
-			if(backwards != 1){ printf(" < "); }
-			//>
-			else { printf(" > "); }
+			//Flips loop
+			if(backwards == 1) 	
+				printf(" < ");
+			else 				
+				printf(" > ");
+
 			Code(t->third);
 			printf("; ");
 
-			//a++) {
-			printf("%s", symTab[t->item]->identifier); //ID		
-			if(backwards != 1) { printf("++) {\n"); }
-			//a-- {
-			else { printf("--) {\n");}
+	        //a += XX
+			printf("%s", loopID);
+			printf(" += ");
+			Code(t->second);
+			printf(";)\n");
+
+			//Body
+			printf("{\n");
 			Code(t->forth);
-		
+
 			//}
 			printf("\n}\n");
 			return;
@@ -777,21 +790,17 @@ void Code(TREE t)
 			Code(t->second);
 			return;
 
-		case VALUE:
-			if (t->first != NULL)
-				Code(t->first);
-			else
-				//Prints the variable ID from the symbol table
-				printf("%s", symTab[t->item]->identifier);
-			return;
-
+		
+		case VALUE_ID:
+			//Prints the variable ID from the symbol table
+			printf("%s", symTab[t->item]->identifier);
+			break;
 		case VALUE_EXPRESSION:
 			printf("(");
 			Code(t->first);
 			printf(")");
 			return;
-	
-        char* letter;
+		char* letter;
 		char* total;
 		case CHAR_CONSTANT:	
 
