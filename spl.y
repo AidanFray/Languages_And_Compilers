@@ -505,6 +505,7 @@ void Code(TREE t)
 
 	switch (t->nodeIdentifier)
 	{
+		//TODO: Add comment with programs name on it
 		//PROGRAM DESIGN
 		case PROGRAM:
 			//Includes
@@ -579,9 +580,9 @@ void Code(TREE t)
 		case IF_STATEMENT:
 			printf("if (");
 			Code(t->first);
-			printf(") \n{\n\t");
+			printf(") \n{\n");
 			Code(t->second);
-			printf("\n}\n\t");		
+			printf("\n}\n");		
 			return;
 
 		case IF_ELSE_STATEMENT:
@@ -625,11 +626,7 @@ void Code(TREE t)
 				//Used to flag if the for loop is to iterate backwards or forwards
 				if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
 				{
-					//TO
-					if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
-					{
-						backwards = 1;
-					}
+					backwards = 1;
 				}
 			}
 			
@@ -644,9 +641,9 @@ void Code(TREE t)
 
 			//Flips loop
 			if(backwards == 1) 	
-				printf(" < ");
+				printf(" >= ");
 			else 				
-				printf(" > ");
+				printf(" <= ");
 
 			Code(t->third);
 			printf("; ");
@@ -655,7 +652,7 @@ void Code(TREE t)
 			printf("%s", loopID);
 			printf(" += ");
 			Code(t->second);
-			printf(";)\n");
+			printf(")\n");
 
 			//Body
 			printf("{\n");
@@ -727,7 +724,6 @@ void Code(TREE t)
 			Code(t->first);
 			printf(");\n");
 			Code(t->second);
-
 			return;
 
 		case CONDITIONAL_AND:
@@ -765,7 +761,8 @@ void Code(TREE t)
 				printf(" > ");
 			else if (t->item == EGT)
 				printf(" >= ");
-		
+			return;
+
 		case PLUS_EXPRESSION:
 			Code(t->first);
 			printf(" + ");
@@ -790,11 +787,11 @@ void Code(TREE t)
 			Code(t->second);
 			return;
 
-		
 		case VALUE_ID:
 			//Prints the variable ID from the symbol table
 			printf("%s", symTab[t->item]->identifier);
-			break;
+			return;
+
 		case VALUE_EXPRESSION:
 			printf("(");
 			Code(t->first);
