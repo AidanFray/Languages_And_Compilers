@@ -516,11 +516,6 @@ void Code(TREE t)
 			printf("}");
 			return;
 
-		case BLOCK:
-			Code(t->first);
-			Code(t->second);
-			return;
-
 		case DECLARATION_IDENTIFIER:
 			if(t->first == NULL)
 			{
@@ -573,13 +568,6 @@ void Code(TREE t)
 				return;
 			}
 		
-		//STATEMENT LISTS
-		case STATEMENT_LIST:
-			Code(t->first);
-			//printf("\n");
-			Code(t->second);
-			return;
-
 		case ASSIGNMENT_STATEMENT:
 			printf("%s", symTab[t->item]->identifier);
 			Code(t->second);
@@ -646,10 +634,6 @@ void Code(TREE t)
 			printf("\n}\n");
 			return;
 
-		case WRITE_STATEMENT:
-			Code(t->first);
-			return;
-
 		case WRITE_STATEMENT_NEWLINE:
 			printf("printf(\"\\n\");\n");
 			return;
@@ -711,10 +695,6 @@ void Code(TREE t)
 
 			return;
 
-		case CONDITIONAL:
-			Code(t->first);
-			return;
-
 		case CONDITIONAL_AND:
 			Code(t->first);
 			printf(" && ");
@@ -737,12 +717,6 @@ void Code(TREE t)
 			printf(")");
 			return;
 
-		case CONDITIONAL_BODY:
-			Code(t->first);
-			Code(t->second);
-			Code(t->third);		
-			return;
-
 		case COMPARATOR:
 			if (t->item == ET)
 				printf(" == ");
@@ -757,10 +731,6 @@ void Code(TREE t)
 			else if (t->item == EGT)
 				printf(" >= ");
 		
-		case EXPRESSION:
-			Code(t->first);
-			return;
-		
 		case PLUS_EXPRESSION:
 			Code(t->first);
 			printf(" + ");
@@ -771,10 +741,6 @@ void Code(TREE t)
 			Code(t->first);
 			printf(" - ");
 			Code(t->second);
-			return;
-
-		case TERM:
-			Code(t->first);
 			return;
 
 		case TIMES_TERM:
@@ -801,10 +767,6 @@ void Code(TREE t)
 			printf("(");
 			Code(t->first);
 			printf(")");
-			return;
-
-		case NUMBER_CONSTANT:
-			Code(t->first);
 			return;
 	
         char* letter;
@@ -868,12 +830,13 @@ void Code(TREE t)
 				Code(t->first);
 			}
 			return;
-	}
 
-	Code(t->first);
-	Code(t->second);
-	Code(t->third);
-	Code(t->forth);
+		default:
+			Code(t->first);
+			Code(t->second);
+			Code(t->third);
+			Code(t->forth);
+	}
 }
 
 #include "lex.yy.c"
