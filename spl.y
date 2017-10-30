@@ -619,15 +619,33 @@ void Code(TREE t)
 			Code(t->first);
 			printf("; ");
 
-			//a < XX;
-			printf("%s", symTab[t->item]->identifier); //ID			
-			printf(" < ");
+			//ID
+			printf("%s", symTab[t->item]->identifier);	
+
+			//Used to see if the value is going from negative to negative
+			//FROM
+			int backwards = 0; //Used to flag if the for loop is to iterate backwards or forwards
+			if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
+			{
+				//TO
+				if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
+				{
+					backwards = 1;
+				}
+			}
+
+			//<
+			if(backwards != 1){ printf(" < "); }
+			//>
+			else { printf(" > "); }
 			Code(t->third);
 			printf("; ");
 
 			//a++) {
-			printf("%s", symTab[t->item]->identifier); //ID			
-			printf("++) {\n");
+			printf("%s", symTab[t->item]->identifier); //ID		
+			if(backwards != 1) { printf("++) {\n"); }
+			//a-- {
+			else { printf("--) {\n");}
 			Code(t->forth);
 		
 			//}
