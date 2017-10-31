@@ -624,39 +624,31 @@ void Code(TREE t)
 		
 		char* loopID;
 		case FOR_STATEMENT:
+			//First->First 		= IS
+			//First->Second 	= BY
+			//Second 			= TO
+
 			//ID value
 			loopID = symTab[t->item]->identifier;
 
-			// //for_statement -> expression -> term.nodeIdentifier
-			int nodeType_SecondBranch = t->first->second->first->nodeIdentifier;
-
-			int backwards = 0;
-			//Checks if it's a backwards loop
-			if (nodeType_SecondBranch == TERM)
-			{
-				//Used to flag if the for loop is to iterate backwards or forwards
-				if(t->first->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
-				{
-					backwards = 1;
-				}
-			}
-			
 			//for(a = XX;
 			printf("for (");
 			printf("%s", loopID); 
 			printf(" = ");
-			Code(t->first->first);
+			Code(t->first->first); //IS
 			printf("; ");	
-			//a > XX;
+		
+			//(by) > ? a < to : a > to
+			printf("(");
+			Code(t->first->second);
+			printf(") > 0 ? " ); //Positive
 			printf("%s", loopID);
-
-			//Flips loop
-			if(backwards == 1) 	
-				printf(" >= ");
-			else 				
-				printf(" <= ");
-
+			printf(" =< ");
 			Code(t->second);
+			printf(" : ");
+			printf("%s", loopID);
+			printf(" >= ");	
+			Code(t->second); 
 			printf("; ");
 
 	        //a += XX
