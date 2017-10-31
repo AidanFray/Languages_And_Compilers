@@ -58,7 +58,7 @@ typedef  struct treeNode TREE_NODE;
 typedef  TREE_NODE *TREE;
 
 /* ------------- Forward declarations --------------------------- */
-TREE create_node(int,int,TREE,TREE,TREE,TREE);
+TREE create_node(int,int,TREE,TREE,TREE);
 int yylex (void);
 void PrintTree(TREE, int);
 void ID_CHECK(char*, TREE);
@@ -99,7 +99,7 @@ program :
 		ID COLON block ENDP ID FULLSTOP  	
 		{ 	
 			TREE ParseTree; 
-			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL, NULL);
+			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL);
 			
 			/*Prints the tree*/
 			#ifdef DEBUG
@@ -115,33 +115,33 @@ program :
 block : 
 		DECLARATIONS declaration_block CODE statement_list 
 		{
-			$$ = create_node(NOTHING, BLOCK, $2, $4, NULL, NULL);
+			$$ = create_node(NOTHING, BLOCK, $2, $4, NULL);
 		}
 		| CODE statement_list
 		{
-			$$ = create_node(NOTHING, BLOCK, $2, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, BLOCK, $2, NULL, NULL);
 		}
 		;	
 	
 declaration_identifier : 
 		ID 
 		{
-			$$ = create_node($1, DECLARATION_IDENTIFIER, NULL, NULL, NULL, NULL);
+			$$ = create_node($1, DECLARATION_IDENTIFIER, NULL, NULL, NULL);
 		}
 		| ID COMMA declaration_identifier
 		{
-			$$ = create_node($1, DECLARATION_IDENTIFIER, $3, NULL, NULL, NULL);
+			$$ = create_node($1, DECLARATION_IDENTIFIER, $3, NULL, NULL);
 		}
 		;	
 	
 declaration_block : 
 		declaration_identifier OF TYPE type_rule SEMICOLON 
 		{
-			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, NULL, NULL);
+			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, NULL);
 		}
 		| declaration_identifier OF TYPE type_rule SEMICOLON declaration_block
 		{
-			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, $6, NULL);
+			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, $6);
 	
 		}
 		;
@@ -149,265 +149,265 @@ declaration_block :
 type_rule : 
 		CHARACTER
 		{
-			$$ = create_node(CHARACTER_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
+			$$ = create_node(CHARACTER_VALUE, TYPE_RULE, NULL, NULL, NULL);
 		}
 		| INTEGER
 		{
-			$$ = create_node(INTEGER_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
+			$$ = create_node(INTEGER_VALUE, TYPE_RULE, NULL, NULL, NULL);
 		}
 		| REAL
 		{
-			$$ = create_node(REAL_VALUE, TYPE_RULE, NULL, NULL, NULL, NULL);
+			$$ = create_node(REAL_VALUE, TYPE_RULE, NULL, NULL, NULL);
 		}
 		;
 	
 statement_list : 
 		statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT_LIST, $1, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT_LIST, $1, NULL, NULL);
 		}
 		| statement SEMICOLON statement_list
 		{
-			$$ = create_node(NOTHING, STATEMENT_LIST, $1, $3, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT_LIST, $1, $3, NULL);
 		}
 		;
 	
 statement : 
 		assignment_statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);
 		}
 		| if_statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);
 		}
 		| do_statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);			
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);			
 		}
 		| while_statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);			
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);			
 		}
 		| for_statement 
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);			
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);			
 		}
 		| write_statement
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);
 		} 
 		| read_statement
 		{
-			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, STATEMENT, $1, NULL, NULL);
 		} 
 		;
 	
 assignment_statement : 
 		expression ASSIGNMENT ID
 		{
-			$$ = create_node($3, ASSIGNMENT_STATEMENT, $1, NULL, NULL, NULL);
+			$$ = create_node($3, ASSIGNMENT_STATEMENT, $1, NULL, NULL);
 		}
 		;
 	
 if_statement : 
 		IF conditional THEN statement_list ENDIF 
 		{
-			$$ = create_node(NOTHING, IF_STATEMENT, $2, $4, NULL, NULL);
+			$$ = create_node(NOTHING, IF_STATEMENT, $2, $4, NULL);
 		}
 		| IF conditional THEN statement_list ELSE statement_list ENDIF
 		{
-			$$ = create_node(NOTHING, IF_ELSE_STATEMENT, $2, $4, $6, NULL);
+			$$ = create_node(NOTHING, IF_ELSE_STATEMENT, $2, $4, $6);
 		}
 		;
 	
 do_statement : 
 		DO statement_list WHILE conditional ENDDO
 		{
-			$$ = create_node(NOTHING, DO_STATEMENT, $2, $4, NULL, NULL);
+			$$ = create_node(NOTHING, DO_STATEMENT, $2, $4, NULL);
 		}	
 		;
 	
 while_statement : 
 		WHILE conditional DO statement_list ENDWHILE
 		{
-			$$ = create_node(NOTHING, WHILE_STATEMENT, $2, $4, NULL, NULL);
+			$$ = create_node(NOTHING, WHILE_STATEMENT, $2, $4, NULL);
 		}
 		;
 	
 for_statement : 
 		FOR ID IS expression BY expression TO expression DO statement_list ENDFOR
 		{	
-			$$ = create_node($2, FOR_STATEMENT, $4, $6, $8, $10);
+			$$ = create_node($2, FOR_STATEMENT, (create_node(NOTHING, FOR_STATEMENT, $4, $6, NULL)), $8, $10);
 		}
 		;
-	
+
 write_statement : 
 		WRITE BRA output_list KET 
 		{
-			$$ = create_node(NOTHING, WRITE_STATEMENT, $3, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, WRITE_STATEMENT, $3, NULL, NULL);
 		}
 		| NEWLINE
 		{
-			$$ = create_node(NOTHING, WRITE_STATEMENT_NEWLINE, NULL, NULL, NULL, NULL);
+			$$ = create_node(NOTHING, WRITE_STATEMENT_NEWLINE, NULL, NULL, NULL);
 		}
 		;
 	
 read_statement : 
 		READ BRA ID KET
 		{
-			$$ = create_node($3, READ_STATEMENT, NULL, NULL, NULL, NULL);	
+			$$ = create_node($3, READ_STATEMENT, NULL, NULL, NULL);	
 		}
 		;
 	
 output_list : 
 		value 
 		{
-			$$ = create_node(NOTHING, OUTPUT_LIST, $1, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, OUTPUT_LIST, $1, NULL, NULL);	
 		}
 		| value COMMA output_list
 		{
-			$$ = create_node(NOTHING, OUTPUT_LIST, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, OUTPUT_LIST, $1, $3, NULL);		
 		}
 		;
 	
 conditional : 
 		conditional_body 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL, $1, NULL, NULL, NULL);		
+			$$ = create_node(NOTHING, CONDITIONAL, $1, NULL, NULL);		
 		}
 		| conditional_body AND conditional 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_AND, $1, $3, NULL, NULL);			
+			$$ = create_node(NOTHING, CONDITIONAL_AND, $1, $3, NULL);			
 			
 		}
 		| conditional_body OR conditional
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_OR, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, CONDITIONAL_OR, $1, $3, NULL);		
 		}
 		;
 	
 conditional_body : 
 		NOT expression comparator expression 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_BODY_NOT, $2, $3, $4, NULL);			
+			$$ = create_node(NOTHING, CONDITIONAL_BODY_NOT, $2, $3, $4);			
 		}
 		| expression comparator expression
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_BODY, $1, $2, $3, NULL);
+			$$ = create_node(NOTHING, CONDITIONAL_BODY, $1, $2, $3);
 		}
 		;
 	
 comparator : 
 		ET 
 		{
-			$$ = create_node(ET, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(ET, COMPARATOR, NULL, NULL, NULL);		
 		}
 		| NET
 		{
-			$$ = create_node(NET, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(NET, COMPARATOR, NULL, NULL, NULL);		
 		} 
 		| LT
 		{
-			$$ = create_node(LT, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(LT, COMPARATOR, NULL, NULL, NULL);		
 		} 
 		| ELT
 		{
-			$$ = create_node(ELT, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(ELT, COMPARATOR, NULL, NULL, NULL);		
 		} 
 		| GT
 		{
-			$$ = create_node(GT, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(GT, COMPARATOR, NULL, NULL, NULL);		
 		} 
 		| EGT
 		{
-			$$ = create_node(EGT, COMPARATOR, NULL, NULL, NULL, NULL);		
+			$$ = create_node(EGT, COMPARATOR, NULL, NULL, NULL);		
 		} 
 		;
 	
 expression : 
 		term
 		{
-			$$ = create_node(NOTHING, EXPRESSION, $1, NULL, NULL, NULL);		
+			$$ = create_node(NOTHING, EXPRESSION, $1, NULL, NULL);		
 		} 
 		| term PLUS expression 
 		{
-			$$ = create_node(NOTHING, PLUS_EXPRESSION, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, PLUS_EXPRESSION, $1, $3, NULL);		
 		}
 		| term MINUS expression
 		{
-			$$ = create_node(NOTHING, MINUS_EXPRESSION, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, MINUS_EXPRESSION, $1, $3, NULL);		
 		}
 		;
 	
 term : 
 		value 
 		{
-			$$ = create_node(NOTHING, TERM, $1, NULL, NULL, NULL);					
+			$$ = create_node(NOTHING, TERM, $1, NULL, NULL);					
 		}
 		| value TIMES term
 		{
-			$$ = create_node(NOTHING, TIMES_TERM, $1, $3, NULL, NULL);					
+			$$ = create_node(NOTHING, TIMES_TERM, $1, $3, NULL);					
 		}
 		| value DIVIDE term
 		{
-			$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL, NULL);		
+			$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL);		
 		}
 		;
 	
 value : 
 		ID 
 		{
-			$$ = create_node($1, VALUE_ID, NULL, NULL, NULL, NULL);	
+			$$ = create_node($1, VALUE_ID, NULL, NULL, NULL);	
 		}
 		| constant 
 		{
-			$$ = create_node(NOTHING, VALUE, $1, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, VALUE, $1, NULL, NULL);	
 		}
 		| BRA expression KET
 		{
-			$$ = create_node(NOTHING, VALUE_EXPRESSION, $2, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, VALUE_EXPRESSION, $2, NULL, NULL);	
 		}
 		;
 	
 constant : 
 		number_constant 
 		{
-			$$ = create_node(NOTHING, NUMBER_CONSTANT, $1, NULL, NULL, NULL);	
+			$$ = create_node(NOTHING, NUMBER_CONSTANT, $1, NULL, NULL);	
 		}
 		| CHAR
 		{
-			$$ = create_node($1, CHAR_CONSTANT, NULL, NULL, NULL, NULL);
+			$$ = create_node($1, CHAR_CONSTANT, NULL, NULL, NULL);
 		}
 		;
 	
 number_constant : 
 		MINUS any_digit FULLSTOP any_digit
 		{
-			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, $4, NULL, NULL);		
+			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, $4, NULL);		
 		} 
 		| any_digit FULLSTOP any_digit
 		{
-			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $1, $3, NULL, NULL);					
+			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $1, $3, NULL);					
 		}
 		| MINUS any_digit
 		{
-			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, NULL, NULL, NULL);					
+			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, NULL, NULL);					
 		}
 		| any_digit
 		{
-			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $1, NULL, NULL, NULL);		
+			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $1, NULL, NULL);		
 		}
 		;
 	
 any_digit : 
 		NUMBER 
 		{
-			$$ = create_node($1, ANY_DIGIT, NULL, NULL, NULL, NULL);		
+			$$ = create_node($1, ANY_DIGIT, NULL, NULL, NULL);		
 		}
 		| NUMBER any_digit
 		{
-			$$ = create_node($1, ANY_DIGIT, $2, NULL, NULL, NULL);		
+			$$ = create_node($1, ANY_DIGIT, $2, NULL, NULL);		
 		}
 		;
 			
@@ -428,7 +428,7 @@ void AssignAllVariables(TREE t, char* c)
 }
 
 /* Code for routines for managing the Parse Tree */
-TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3, TREE p4)
+TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3)
 {
 	TREE t;
 	t = (TREE)malloc(sizeof(TREE_NODE));
@@ -437,7 +437,6 @@ TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3, TREE 
 	t->first = p1;
 	t->second = p2;
 	t->third = p3;
-	t->forth = p4;
     return (t);
 }
 
@@ -486,7 +485,6 @@ void PrintTree(TREE t, int indent)
 	PrintTree(t->first, indent + INDENTVALUE);
 	PrintTree(t->second, indent + INDENTVALUE);
 	PrintTree(t->third, indent + INDENTVALUE);
-	PrintTree(t->forth, indent + INDENTVALUE);
 }
 
 /* Function that checks if the ID is in the symbol table */
@@ -498,6 +496,18 @@ void ID_CHECK(char *idType, TREE t)
 			printf("UNKNOWN ID: %d ", t->item);
 }
 
+//This function prints expressions in the format of
+//	Left <Operator> Right
+//
+//An example is:
+// 	1 * 2
+//
+void Print_Expression(char* seperator, TREE t)
+{
+	Code(t->first);
+	printf(" %s ", seperator);
+	Code(t->second);
+}
 
 void Code(TREE t)
 {
@@ -611,20 +621,21 @@ void Code(TREE t)
 			Code(t->second);
 			printf("\n}\n");
 			return;
+		
 		char* loopID;
 		case FOR_STATEMENT:
-			//ID
+			//ID value
 			loopID = symTab[t->item]->identifier;
 
-			//for_statement -> expression -> term.nodeIdentifier
-			int nodeType_SecondBranch = t->second->first->nodeIdentifier;
+			// //for_statement -> expression -> term.nodeIdentifier
+			int nodeType_SecondBranch = t->first->second->first->nodeIdentifier;
 
 			int backwards = 0;
+			//Checks if it's a backwards loop
 			if (nodeType_SecondBranch == TERM)
 			{
-				//Checks if it's a backwards loop
 				//Used to flag if the for loop is to iterate backwards or forwards
-				if(t->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
+				if(t->first->second->first->first->first->first->nodeIdentifier == NEG_LITERAL_NUMBER_CONSTANT)
 				{
 					backwards = 1;
 				}
@@ -634,7 +645,7 @@ void Code(TREE t)
 			printf("for (");
 			printf("%s", loopID); 
 			printf(" = ");
-			Code(t->first);
+			Code(t->first->first);
 			printf("; ");	
 			//a > XX;
 			printf("%s", loopID);
@@ -645,18 +656,18 @@ void Code(TREE t)
 			else 				
 				printf(" <= ");
 
-			Code(t->third);
+			Code(t->second);
 			printf("; ");
 
 	        //a += XX
 			printf("%s", loopID);
 			printf(" += ");
-			Code(t->second);
+			Code(t->first->second);
 			printf(")\n");
 
 			//Body
 			printf("{\n");
-			Code(t->forth);
+			Code(t->third);
 
 			//}
 			printf("\n}\n");
@@ -726,18 +737,6 @@ void Code(TREE t)
 			Code(t->second);
 			return;
 
-		case CONDITIONAL_AND:
-			Code(t->first);
-			printf(" && ");
-			Code(t->second);
-			return;
-
-		case CONDITIONAL_OR:
-			Code(t->first);
-			printf(" || ");
-			Code(t->second);
-			return;
-
 		case CONDITIONAL_BODY_NOT:
 			printf("!(");
 			Code(t->first);
@@ -763,28 +762,28 @@ void Code(TREE t)
 				printf(" >= ");
 			return;
 
+		case CONDITIONAL_AND:
+			Print_Expression("&&", t);
+			return;
+
+		case CONDITIONAL_OR:
+			Print_Expression("||", t);
+			return;
+
 		case PLUS_EXPRESSION:
-			Code(t->first);
-			printf(" + ");
-			Code(t->second);
+			Print_Expression("+", t);
 			return;
 
 		case MINUS_EXPRESSION:
-			Code(t->first);
-			printf(" - ");
-			Code(t->second);
+			Print_Expression("-", t);
 			return;
 
 		case TIMES_TERM:
-			Code(t->first);
-			printf(" * ");
-			Code(t->second);
+			Print_Expression("*", t);
 			return;
 		
 		case DIVIDE_TERM:
-			Code(t->first);
-			printf(" / ");
-			Code(t->second);
+			Print_Expression("/", t);
 			return;
 
 		case VALUE_ID:
@@ -797,6 +796,7 @@ void Code(TREE t)
 			Code(t->first);
 			printf(")");
 			return;
+
 		char* letter;
 		char* total;
 		case CHAR_CONSTANT:	
@@ -819,26 +819,29 @@ void Code(TREE t)
 			return;
 
 		case NEG_LITERAL_NUMBER_CONSTANT:
+			//Signle negative value
 			if (t->second == NULL)
 			{
 				printf("-");
 				Code(t->first);
 			}
+			//Multi negative decimal
 			else
 			{
 				printf("-");
 				Code(t->first);
 				printf(".");
 				Code(t->second);
-
 			}
 			return;
 
 		case LITERAL_NUMBER_CONSTANT:
+			//Single value
 			if(t->second == NULL)
 			{
 				Code(t->first);		
 			}
+			//Decimal value
 			else
 			{
 				Code(t->first);
@@ -848,10 +851,12 @@ void Code(TREE t)
 			return;
 
 		case ANY_DIGIT:
+			//Single digit
 			if(t->first == NULL)
 			{
 				printf("%d", t->item);
 			}
+			//Multi digit
 			else
 			{
 				printf("%d", t->item);
@@ -863,7 +868,6 @@ void Code(TREE t)
 			Code(t->first);
 			Code(t->second);
 			Code(t->third);
-			Code(t->forth);
 	}
 }
 
