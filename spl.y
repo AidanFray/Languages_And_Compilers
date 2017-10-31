@@ -104,9 +104,7 @@ program :
 			/*Prints the tree*/
 			#ifdef DEBUG
 			PrintTree(ParseTree, 0);
-			#endif	
-
-			#ifndef DEBUG
+			#elif !YYDEBUG
 			Code(ParseTree)
 			#endif
 		}
@@ -413,7 +411,7 @@ any_digit :
 			
 %%
 
-//Reccursive method used to assign all variables a type
+/*Reccursive method used to assign all variables a type*/
 void AssignAllVariables(TREE t, char* c)
 {
 	if(t->first != NULL)
@@ -440,7 +438,7 @@ TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3)
     return (t);
 }
 
-//Keeps track of how much indent there should be
+/*Keeps track of how much indent there should be*/
 #define INDENTVALUE 2
 int currentPosition = 0;
 /* Put other auxiliary functions here */
@@ -477,11 +475,12 @@ void PrintTree(TREE t, int indent)
 	else
 		printf("nodeID: %s\n", NodeName[t->nodeIdentifier]);
 
-	//Indetent priniting
+	/*Indetent priniting*/
 	printf("|");
-	for (int i = 0; i < indent; i++) printf(" ");
+	int i;
+	for (i = 0; i < indent; i++) printf(" ");
 
-	//Prints the rest of the tree sections
+	/*Prints the rest of the tree sections*/
 	PrintTree(t->first, indent + INDENTVALUE);
 	PrintTree(t->second, indent + INDENTVALUE);
 	PrintTree(t->third, indent + INDENTVALUE);
@@ -496,12 +495,11 @@ void ID_CHECK(char *idType, TREE t)
 			printf("UNKNOWN ID: %d ", t->item);
 }
 
-//This function prints expressions in the format of
-//	Left <Operator> Right
-//
-//An example is:
-// 	1 * 2
-//
+/*
+This function prints expressions in the format of
+	Left <Operator> Right
+An example is:
+ 	1 * 2 */
 void Print_Expression(char* seperator, TREE t)
 {
 	Code(t->first);
@@ -515,10 +513,10 @@ void Code(TREE t)
 
 	switch (t->nodeIdentifier)
 	{
-		//TODO: Add comment with programs name on it
-		//PROGRAM DESIGN
+		/*TODO: Add comment with programs name on it*/
+		/*PROGRAM DESIGN*/
 		case PROGRAM:
-			//Includes
+			/*Includes*/
 			printf("#include <stdio.h>\n");
 			printf("\n");
 
@@ -540,7 +538,7 @@ void Code(TREE t)
 			}
 		 	return;
 		case DECLARATION_BLOCK:
-			//Assigning a type
+			/*Assigning a type*/
 			if (t->second->item == CHARACTER_VALUE)
 			{
 				AssignAllVariables(t, "CHAR");
@@ -561,7 +559,7 @@ void Code(TREE t)
 			Code(t->third);
 			return;
 
-		//TYPES
+		/*TYPES*/
 		case TYPE_RULE:
 			if(t->item == CHARACTER_VALUE)
 			{
@@ -624,21 +622,23 @@ void Code(TREE t)
 		
 		char* loopID;
 		case FOR_STATEMENT:
-			//First->First 		= IS
-			//First->Second 	= BY
-			//Second 			= TO
+			/*
+			First->First 	= IS
+			First->Second 	= BY
+			Second 			= TO
+			*/
 
-			//ID value
+			/*ID value*/
 			loopID = symTab[t->item]->identifier;
 
-			//for(a = XX;
+			/*for(a = XX;*/
 			printf("for (");
 			printf("%s", loopID); 
 			printf(" = ");
 			Code(t->first->first);
 			printf("; ");	
 		
-			//(by) > ? a < to : a > to
+			/*(by) > ? a < to : a > to */
 			printf("(");
 			Code(t->first->second);
 			printf(") > 0 ? " );
@@ -651,18 +651,18 @@ void Code(TREE t)
 			Code(t->second); 
 			printf("; ");
 
-	        //a += XX
+	        /*a += XX*/
 			printf("%s", loopID);
 			printf(" += ");
 			Code(t->first->second);
 			printf(")\n");
 
-			//{
-			//<body>
+			/*{
+			<body> */
 			printf("{\n");
 			Code(t->third);
 
-			//}
+			/*}*/
 			printf("\n}\n");
 			return;
 
@@ -671,23 +671,23 @@ void Code(TREE t)
 			return;
 
 		case READ_STATEMENT:
-			//CHARACTER
+			/*Character*/
 			if (symTab[t->item]->type_name[0] == 'C')
 			{	
 				printf("scanf(\"%%s\", &" );
 			}
-			//NUMBER
+			/*Integer*/
 			else 
 			if (symTab[t->item]->type_name[0] == 'I')
 			{
 				printf("scanf(\"%%d\", &" );
 			}
-			//DOUBLE
+			/*Double*/
 			else if(symTab[t->item]->type_name[0] == 'D')
 			{
 				printf("scanf(\"%%lf\", &" );
 			}
-			//STRING
+			/*Other*/			
 			else
 			{
 				printf("scanf(\"%%s\", &" );				
@@ -697,12 +697,10 @@ void Code(TREE t)
 			return;
 
 		case OUTPUT_LIST:
-			//SINGLE VALUE and ID
 			if (t->first->item != NOTHING)
 			{
 				char* type_n = symTab[t->first->item]->type_name;
 				
-				//TODO: Make these comparasons stronger
 				if (type_n[0] == 'C')
 				{
 					printf("printf(\"%%c\", ");
@@ -780,7 +778,6 @@ void Code(TREE t)
 			return;
 
 		case VALUE_ID:
-			//Prints the variable ID from the symbol table
 			printf("%s", symTab[t->item]->identifier);
 			return;
 
@@ -794,31 +791,31 @@ void Code(TREE t)
 		char* total;
 		case CHAR_CONSTANT:	
 
-			//Allocates memory to char *
+			/*Allocates memory to char */
 			letter = malloc(sizeof(char) * 4);
 			total = malloc(sizeof(char) * 10);
 			
-			//Grabs the letter
+			/*Grabs the letter*/
 			memcpy(letter, &symTab[t->item]->identifier[1], 1);
 			
-			//Encases it in double quotes
+			/*Encases it in double quotes*/
 			total[0] = '\"';
 			total[1] = letter[0];
 			total[2] = '\"';
 			total[3] = '\0';
 			
-			//Prints the chracter
+			/*Prints the chracter*/
 			printf("%s", total);
 			return;
 
 		case NEG_LITERAL_NUMBER_CONSTANT:
-			//Signle negative value
+			/*Signle negative value*/
 			if (t->second == NULL)
 			{
 				printf("-");
 				Code(t->first);
 			}
-			//Multi negative decimal
+			/*Multi negative decimal*/
 			else
 			{
 				printf("-");
@@ -829,12 +826,12 @@ void Code(TREE t)
 			return;
 
 		case LITERAL_NUMBER_CONSTANT:
-			//Single value
+			/*Single value*/
 			if(t->second == NULL)
 			{
 				Code(t->first);		
 			}
-			//Decimal value
+			/*Decimal value*/
 			else
 			{
 				Code(t->first);
@@ -844,12 +841,12 @@ void Code(TREE t)
 			return;
 
 		case ANY_DIGIT:
-			//Single digit
+			/*Single digit*/
 			if(t->first == NULL)
 			{
 				printf("%d", t->item);
 			}
-			//Multi digit
+			/*Multi digit*/
 			else
 			{
 				printf("%d", t->item);

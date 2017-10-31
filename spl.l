@@ -168,7 +168,7 @@ int installId(char *id)
           return (NOTHING) ;
     else
     {
-       //Creates a new node
+       /*Creates a new node*/
        symTab[currentSymTabSize] = newSymTabNode();
        
        /* Recommended code for preventing buffer overrun on bounded strings */
