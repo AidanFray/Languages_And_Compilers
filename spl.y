@@ -635,15 +635,15 @@ void Code(TREE t)
 			printf("for (");
 			printf("%s", loopID); 
 			printf(" = ");
-			Code(t->first->first); //IS
+			Code(t->first->first);
 			printf("; ");	
 		
 			//(by) > ? a < to : a > to
 			printf("(");
 			Code(t->first->second);
-			printf(") > 0 ? " ); //Positive
+			printf(") > 0 ? " );
 			printf("%s", loopID);
-			printf(" =< ");
+			printf(" <= ");
 			Code(t->second);
 			printf(" : ");
 			printf("%s", loopID);
@@ -657,7 +657,8 @@ void Code(TREE t)
 			Code(t->first->second);
 			printf(")\n");
 
-			//Body
+			//{
+			//<body>
 			printf("{\n");
 			Code(t->third);
 
