@@ -521,6 +521,10 @@ void Code(TREE t)
 			printf("\n");
 
 			printf("int main(void) \n{\n");
+
+			/*var declarations*/
+			printf("register int _by;");
+
 			Code(t->first);
 			printf("}");
 			return;
@@ -623,11 +627,16 @@ void Code(TREE t)
 		char* loopID;
 		case FOR_STATEMENT:
 			/*
+			Key:
 			First->First 	= IS
 			First->Second 	= BY
 			Second 			= TO
-			*/
 
+			Note:
+			This for loop design has been taken from the
+			ACW Help section
+			*/
+			
 			/*ID value*/
 			loopID = symTab[t->item]->identifier;
 
@@ -638,19 +647,15 @@ void Code(TREE t)
 			Code(t->first->first);
 			printf("; ");	
 		
-			/*(by) > ? a < to : a > to */
-			printf("(");
+			/*_by = by, (a-to)*((_by > 0) - (_by < 0)) <= 0 ;*/
+			printf("_by = ");
 			Code(t->first->second);
-			printf(") > 0 ? " );
-			printf("%s", loopID);
-			printf(" <= ");
-			Code(t->second);
-			printf(" : ");
-			printf("%s", loopID);
-			printf(" >= ");	
-			Code(t->second); 
-			printf("; ");
+			printf(", ");
 
+			printf("(%s-(", loopID);
+			Code(t->second);
+			printf("))*((_by > 0) - (_by < 0)) <= 0; ");
+		
 	        /*a += XX*/
 			printf("%s", loopID);
 			printf(" += ");
