@@ -523,7 +523,7 @@ void Code(TREE t)
 			printf("int main(void) \n{\n");
 
 			/*var declarations*/
-			printf("register int _by;");
+			printf("register int _by;\n");
 
 			Code(t->first);
 			printf("}");
@@ -725,7 +725,7 @@ void Code(TREE t)
 			}
 			else
 			{
-				printf("printf(\"%%s\", ");
+				printf("printf(\"%%c\", ");
 			}
 
 			Code(t->first);
@@ -804,9 +804,9 @@ void Code(TREE t)
 			memcpy(letter, &symTab[t->item]->identifier[1], 1);
 			
 			/*Encases it in double quotes*/
-			total[0] = '\"';
+			total[0] = '\'';
 			total[1] = letter[0];
-			total[2] = '\"';
+			total[2] = '\'';
 			total[3] = '\0';
 			
 			/*Prints the chracter*/
