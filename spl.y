@@ -419,10 +419,7 @@ void AssignAllVariables(TREE t, char* c)
 		strncpy(symTab[t->first->item]->type_name, c, 10);
 		AssignAllVariables(t->first, c);
 	}
-	else
-	{
-		return;
-	}
+	return;
 }
 
 /* Code for routines for managing the Parse Tree */
@@ -500,6 +497,18 @@ This function prints expressions in the format of
 	Left <Operator> Right
 An example is:
  	1 * 2 */
+
+char output[50];
+char* Print_ID(int item)
+{
+	/*Adds a unique ending to stop C keywords from breaking the compiling*/
+	strcpy(output, symTab[item]->identifier);
+	char id_array[] = "_V";
+
+	strcat(output, id_array);
+	return output;
+}
+
 void Print_Expression(char* seperator, TREE t)
 {
 	Code(t->first);
@@ -523,7 +532,7 @@ void Code(TREE t)
 			printf("int main(void) \n{\n");
 
 			/*var declarations*/
-			printf("register int _by;");
+			printf("register int _by;\n");
 
 			Code(t->first);
 			printf("}");
@@ -532,11 +541,11 @@ void Code(TREE t)
 		case DECLARATION_IDENTIFIER:
 			if(t->first == NULL)
 			{
-				printf("%s", symTab[t->item]->identifier);
+				printf("%s", Print_ID(t->item));
 			}
 			else
 			{
-				printf("%s", symTab[t->item]->identifier);
+				printf("%s", Print_ID(t->item));
 				printf(",");
 				Code(t->first);
 			}
@@ -582,7 +591,7 @@ void Code(TREE t)
 			}
 		
 		case ASSIGNMENT_STATEMENT:
-			printf("%s", symTab[t->item]->identifier);
+			printf("%s",Print_ID(t->item));
 			Code(t->second);
 			printf(" = ");
 			Code(t->first);
@@ -624,7 +633,8 @@ void Code(TREE t)
 			printf("\n}\n");
 			return;
 		
-		char* loopID;
+		char loopID[50];
+		char* buffer;
 		case FOR_STATEMENT:
 			/*
 			Key:
@@ -636,21 +646,22 @@ void Code(TREE t)
 			This for loop design has been taken from the
 			ACW Help section
 			*/
-			
-			/*ID value*/
-			loopID = symTab[t->item]->identifier;
 
+			/*ID value*/
+			buffer = Print_ID(t->item);
+			strcpy(loopID, buffer);
+	
 			/*for(a = XX;*/
 			printf("for (");
 			printf("%s", loopID); 
 			printf(" = ");
 			Code(t->first->first);
-			printf("; ");	
+			printf(", ");	
 		
 			/*_by = by, (a-to)*((_by > 0) - (_by < 0)) <= 0 ;*/
 			printf("_by = ");
 			Code(t->first->second);
-			printf(", ");
+			printf("; ");
 
 			printf("(%s-(", loopID);
 			Code(t->second);
@@ -658,8 +669,7 @@ void Code(TREE t)
 		
 	        /*a += XX*/
 			printf("%s", loopID);
-			printf(" += ");
-			Code(t->first->second);
+			printf(" += _by");
 			printf(")\n");
 
 			/*{
@@ -679,7 +689,7 @@ void Code(TREE t)
 			/*Character*/
 			if (symTab[t->item]->type_name[0] == 'C')
 			{	
-				printf("scanf(\"%%s\", &" );
+				printf("scanf(\"%%c\", &" );
 			}
 			/*Integer*/
 			else 
@@ -695,9 +705,9 @@ void Code(TREE t)
 			/*Other*/			
 			else
 			{
-				printf("scanf(\"%%s\", &" );				
+				printf("scanf(\"%%c\", &" );				
 			}
-			printf("%s", symTab[t->item]->identifier);
+			printf("%s", Print_ID(t->item));
 			printf(");\n");
 			return;
 
@@ -725,7 +735,7 @@ void Code(TREE t)
 			}
 			else
 			{
-				printf("printf(\"%%s\", ");
+				printf("printf(\"%%c\", ");
 			}
 
 			Code(t->first);
@@ -783,7 +793,7 @@ void Code(TREE t)
 			return;
 
 		case VALUE_ID:
-			printf("%s", symTab[t->item]->identifier);
+			printf("%s", Print_ID(t->item));
 			return;
 
 		case VALUE_EXPRESSION:
@@ -804,9 +814,9 @@ void Code(TREE t)
 			memcpy(letter, &symTab[t->item]->identifier[1], 1);
 			
 			/*Encases it in double quotes*/
-			total[0] = '\"';
+			total[0] = '\'';
 			total[1] = letter[0];
-			total[2] = '\"';
+			total[2] = '\'';
 			total[3] = '\0';
 			
 			/*Prints the chracter*/
