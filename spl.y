@@ -19,7 +19,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE, VALUE_ID,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT, NOT_EXPRESSION
 };  
 
 char *NodeName[] = 
@@ -29,7 +29,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE" ,"VALUE_ID","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT", "NOT_EXPRESSION"
 };
 
 #ifndef TRUE
@@ -84,7 +84,7 @@ int currentSymTabSize = 0;
 
 %type<tVal>
 	program block declaration_identifier declaration_block type_rule statement_list statement assignment_statement 	if_statement do_statement while_statement for_statement write_statement
-	read_statement output_list conditional conditional_body comparator expression term value constant number_constant any_digit
+	read_statement output_list conditional conditional_body comparator expression term value constant number_constant any_digit not_expression
 
 %token<iVal>
 	ID NUMBER CHAR
@@ -286,13 +286,26 @@ conditional :
 		;
 	
 conditional_body : 
-		NOT expression comparator expression 
+		not_expression expression comparator expression 
 		{
-			$$ = create_node(NOTHING, CONDITIONAL_BODY_NOT, $2, $3, $4);			
+			$$ = create_node(NOTHING, CONDITIONAL_BODY_NOT, 
+			create_node(NOTHING, CONDITIONAL_BODY_NOT, $1, $2, $3), $4, NULL);			
 		}
 		| expression comparator expression
 		{
 			$$ = create_node(NOTHING, CONDITIONAL_BODY, $1, $2, $3);
+		}
+		;
+
+not_expression :
+		NOT
+		{
+			$$ = create_node(NOTHING, NOT_EXPRESSION, NULL, NULL, NULL);
+		}
+		|
+		NOT not_expression
+		{
+			$$ = create_node(NOTHING, NOT_EXPRESSION, $2, NULL, NULL);
 		}
 		;
 	
@@ -598,6 +611,11 @@ void Code(TREE t)
 			printf(";\n");
 			return;
 
+		case NOT_EXPRESSION:
+			printf("%s", "!");
+			Code(t->first);
+			return;
+
 		case IF_STATEMENT:
 			printf("if (");
 			Code(t->first);
@@ -744,12 +762,13 @@ void Code(TREE t)
 			return;
 
 		case CONDITIONAL_BODY_NOT:
-			printf("!(");
-			Code(t->first);
+			Code(t->first->first);
+			printf("(");
+			Code(t->first->second);
+			printf(" ");
+			Code(t->first->third);	
 			printf(" ");
 			Code(t->second);
-			printf(" ");
-			Code(t->third);			
 			printf(")");
 			return;
 
