@@ -479,7 +479,7 @@ void PrintTree(TREE t, int indent)
 		}
 	}
 
-	/* Printing the name of the ID */
+	/* PRINT_WITH_INDENT the name of the ID */
 	if (t->nodeIdentifier < 0 || t->nodeIdentifier > sizeof(NodeName))
 		printf("Unknown nodeID: %d\n", t->nodeIdentifier);
 	else
@@ -529,8 +529,14 @@ void Print_Expression(char* seperator, TREE t)
 	Code(t->second);
 }
 
+
 void Code(TREE t)
 {
+	/* Deals with indent */
+	#define PRINT_WITH_INDENT for (i = indent; i--;) printf("    "); printf
+	int i;
+	static unsigned indent;
+
 	if (t == NULL) return; 
 
 	switch (t->nodeIdentifier)
@@ -538,17 +544,18 @@ void Code(TREE t)
 		/*TODO: Add comment with programs name on it*/
 		/*PROGRAM DESIGN*/
 		case PROGRAM:
+		
 			/*Includes*/
-			printf("#include <stdio.h>\n");
-			printf("\n");
+			PRINT_WITH_INDENT("#include <stdio.h>\n");
+			PRINT_WITH_INDENT("\n");
+			PRINT_WITH_INDENT("int main(void) \n{\n");
 
-			printf("int main(void) \n{\n");
-
-			/*var declarations*/
-			printf("register int _by;\n");
-
+			/*Body*/
+			indent++;
+			PRINT_WITH_INDENT("register int _by;\n");
 			Code(t->first);
-			printf("}");
+			indent--;
+			PRINT_WITH_INDENT("}");
 			return;
 
 		case DECLARATION_IDENTIFIER:
@@ -589,22 +596,22 @@ void Code(TREE t)
 		case TYPE_RULE:
 			if(t->item == CHARACTER_VALUE)
 			{
-				printf("char");
+				PRINT_WITH_INDENT("char");
 				return;
 			}
 			else if (t->item == INTEGER_VALUE)
 			{
-				printf("int");
+				PRINT_WITH_INDENT("int");
 				return;
 			}
 			else if (t->item == REAL_VALUE)
 			{
-				printf("double");
+				PRINT_WITH_INDENT("double");
 				return;
 			}
 		
 		case ASSIGNMENT_STATEMENT:
-			printf("%s",Print_ID(t->item));
+			PRINT_WITH_INDENT("%s",Print_ID(t->item));
 			Code(t->second);
 			printf(" = ");
 			Code(t->first);
@@ -617,38 +624,62 @@ void Code(TREE t)
 			return;
 
 		case IF_STATEMENT:
-			printf("if (");
+			PRINT_WITH_INDENT("if (");
 			Code(t->first);
-			printf(") \n{\n");
+			printf(") {\n");
+
+			/*Body*/
+			indent++;
 			Code(t->second);
-			printf("\n}\n");		
+			indent--;
+
+			PRINT_WITH_INDENT("}\n\n");		
 			return;
 
 		case IF_ELSE_STATEMENT:
-			printf("if (");
+			PRINT_WITH_INDENT("if (");
 			Code(t->first);
 			printf(") \n{\n");
+
+			/*Body*/
+			indent++;
 			Code(t->second);
-			printf("\n}\n");
-			printf("else \n{\n");
+			indent--;
+
+			PRINT_WITH_INDENT("\n}\n");
+			PRINT_WITH_INDENT("else \n{\n");
+
+			/*Body*/
+			indent++;
 			Code(t->third);
-			printf("\n}\n");
+			indent--;
+
+			PRINT_WITH_INDENT("}\n\n");
 			return;
 
 		case DO_STATEMENT:
-			printf("do {\n");
+			PRINT_WITH_INDENT("do {\n");
+			/*Body*/
+			indent++;
 			Code(t->first);
-			printf("\n} while(");
+			indent--;
+
+			PRINT_WITH_INDENT("} while(");
 			Code(t->second);
-			printf(");\n");
+			printf(");\n\n");
 			return;
 
 		case WHILE_STATEMENT:
-			printf("while (");
+			PRINT_WITH_INDENT("while (");
 			Code(t->first);
 			printf(") {\n");
+
+			/*Body*/ 
+			indent++;
 			Code(t->second);
-			printf("\n}\n");
+			indent--;
+
+			PRINT_WITH_INDENT("}\n\n");
 			return;
 		
 		char loopID[50];
@@ -669,61 +700,62 @@ void Code(TREE t)
 			buffer = Print_ID(t->item);
 			strcpy(loopID, buffer);
 	
-			/*for(a = XX;*/
-			printf("for (");
+			/*for(a = XX, _by = by;*/
+			PRINT_WITH_INDENT("for (");
 			printf("%s", loopID); 
 			printf(" = ");
 			Code(t->first->first);
 			printf(", ");	
-		
-			/*_by = by, (a-to)*((_by > 0) - (_by < 0)) <= 0 ;*/
+
 			printf("_by = ");
 			Code(t->first->second);
 			printf("; ");
 
+			/*(a-to)*((_by > 0) - (_by < 0)) <= 0 ;*/
 			printf("(%s-(", loopID);
 			Code(t->second);
 			printf("))*((_by > 0) - (_by < 0)) <= 0; ");
 		
-	        /*a += XX*/
+	        /*a += _by*/
 			printf("%s", loopID);
 			printf(" += _by");
-			printf(")\n");
+			printf(") {\n");
 
 			/*{
 			<body> */
-			printf("{\n");
+			indent++;
 			Code(t->third);
+			indent--;
 
 			/*}*/
-			printf("\n}\n");
+			PRINT_WITH_INDENT("}\n\n");
 			return;
 
 		case WRITE_STATEMENT_NEWLINE:
-			printf("printf(\"\\n\");\n");
+			PRINT_WITH_INDENT("printf(\"\\n\");\n");
 			return;
 
 		case READ_STATEMENT:
 			/*Character*/
 			if (symTab[t->item]->type_name[0] == 'C')
 			{	
-				printf("scanf(\"%%c\", &" );
+				PRINT_WITH_INDENT("scanf(\"%%c\", &" );
 			}
 			/*Integer*/
 			else 
 			if (symTab[t->item]->type_name[0] == 'I')
 			{
-				printf("scanf(\"%%d\", &" );
+				PRINT_WITH_INDENT("scanf(\"%%d\", &" );
 			}
 			/*Double*/
 			else if(symTab[t->item]->type_name[0] == 'D')
 			{
-				printf("scanf(\"%%lf\", &" );
+				PRINT_WITH_INDENT("scanf(\"%%lf\", &" );
 			}
 			/*Other*/			
 			else
 			{
-				printf("scanf(\"%%c\", &" );				
+				PRINT_WITH_INDENT("scanf(\"%%c\", &" );				
 			}
 			printf("%s", Print_ID(t->item));
 			printf(");\n");
@@ -736,24 +768,24 @@ void Code(TREE t)
 				
 				if (type_n[0] == 'C')
 				{
-					printf("printf(\"%%c\", ");
+					PRINT_WITH_INDENT("printf(\"%%c\", ");
 				}
 				else if (type_n[0] == 'I')
 				{
-					printf("printf(\"%%d\", ");
+					PRINT_WITH_INDENT("printf(\"%%d\", ");
 				}
 				else if (type_n[0] == 'D')
 				{
-					printf("printf(\"%%lf\", ");
+					PRINT_WITH_INDENT("printf(\"%%lf\", ");
 				}
 			}
 			else if(t->first->nodeIdentifier == VALUE_EXPRESSION)
 			{
-				printf("printf(\"%%d\", ");
+				PRINT_WITH_INDENT("printf(\"%%d\", ");
 			}
 			else
 			{
-				printf("printf(\"%%c\", ");
+				PRINT_WITH_INDENT("printf(\"%%c\", ");
 			}
 
 			Code(t->first);
