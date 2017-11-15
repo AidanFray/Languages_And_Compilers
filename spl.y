@@ -68,6 +68,7 @@ void Code(TREE);
 struct symTabNode {
     char identifier[IDLENGTH];
 	char type_name[10];
+	int uses;
 };
 typedef  struct symTabNode SYMTABNODE;
 typedef  SYMTABNODE *SYMTABNODEPTR;
@@ -520,6 +521,8 @@ char* Print_ID(int item)
 
 	strcat(output, id_array);
 	return output;
+	
+	return "";
 }
 
 void Print_Expression(char* seperator, TREE t)
@@ -528,7 +531,6 @@ void Print_Expression(char* seperator, TREE t)
 	printf(" %s ", seperator);
 	Code(t->second);
 }
-
 
 void Code(TREE t)
 {
@@ -561,12 +563,20 @@ void Code(TREE t)
 		case DECLARATION_IDENTIFIER:
 			if(t->first == NULL)
 			{
-				printf("%s", Print_ID(t->item));
+				/*Checks if ID has ever been used*/
+				if(symTab[t->item]->uses > 0)
+				{
+					printf("%s", Print_ID(t->item));
+				}
 			}
 			else
 			{
-				printf("%s", Print_ID(t->item));
-				printf(",");
+				/*Checks if ID has ever been used*/
+				if(symTab[t->item]->uses > 0)
+				{
+					printf("%s", Print_ID(t->item));
+					printf(",");
+				}
 				Code(t->first);
 			}
 		 	return;
@@ -596,6 +606,7 @@ void Code(TREE t)
 		case TYPE_RULE:
 			if(t->item == CHARACTER_VALUE)
 			{
+				/*TODO: Need a check here that traverses the list to look if any variables on the line aren't dead*/
 				PRINT_WITH_INDENT("char");
 				return;
 			}
@@ -609,7 +620,8 @@ void Code(TREE t)
 				PRINT_WITH_INDENT("double");
 				return;
 			}
-		
+			return;
+
 		case ASSIGNMENT_STATEMENT:
 			PRINT_WITH_INDENT("%s",Print_ID(t->item));
 			Code(t->second);
@@ -926,5 +938,4 @@ void Code(TREE t)
 			Code(t->third);
 	}
 }
-
 #include "lex.yy.c"

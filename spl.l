@@ -136,7 +136,7 @@ int lookup(char *s)
     extern int currentSymTabSize;
     int i;
 
-    for(i=0; i<currentSymTabSize; i++)
+    for(i=0; i < currentSymTabSize; i++)
     {
         if(strncmp(s,symTab[i]->identifier,IDLENGTH) == 0)
         {
@@ -160,6 +160,7 @@ int installId(char *id)
     index = lookup(id);
     if (index >= 0)
     {
+        symTab[index]->uses++;
         return (index);
     }
     else 
@@ -168,13 +169,16 @@ int installId(char *id)
           return (NOTHING) ;
     else
     {
-       /*Creates a new node*/
-       symTab[currentSymTabSize] = newSymTabNode();
-       
-       /* Recommended code for preventing buffer overrun on bounded strings */
-       strncpy(symTab[currentSymTabSize]->identifier,id,IDLENGTH);
-       symTab[currentSymTabSize]->identifier[IDLENGTH-1] = '\0';
-       return(currentSymTabSize++);
+        /*Creates a new node*/
+        symTab[currentSymTabSize] = newSymTabNode();
+
+        /*Inits the uses value*/
+        symTab[currentSymTabSize]->uses = 0;
+
+        /* Recommended code for preventing buffer overrun on bounded strings */
+        strncpy(symTab[currentSymTabSize]->identifier,id,IDLENGTH);
+        symTab[currentSymTabSize]->identifier[IDLENGTH-1] = '\0';
+        return(currentSymTabSize++);
     }
 }
 #endif
