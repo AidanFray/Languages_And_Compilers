@@ -543,27 +543,28 @@ void Code(TREE t)
 
 	switch (t->nodeIdentifier)
 	{
-		/*TODO: Add comment with programs name on it*/
 		/*PROGRAM DESIGN*/
 		case PROGRAM:
 		
+			/*Program name comment*/
+			printf("\n/* Program: %s */\n\n", symTab[t->item]->identifier);
+
 			/*Includes*/
-			PRINT_WITH_INDENT("#include <stdio.h>\n");
-			PRINT_WITH_INDENT("\n");
-			PRINT_WITH_INDENT("int main(void) \n{\n");
+			printf("#include <stdio.h>\n\n");
+			printf("int main(void) \n{\n");
 
 			/*Body*/
 			indent++;
 			PRINT_WITH_INDENT("register int _by;\n");
 			Code(t->first);
 			indent--;
-			PRINT_WITH_INDENT("}");
+			PRINT_WITH_INDENT("}\n");
 			return;
 
 		case DECLARATION_IDENTIFIER:
 			/*Optimisation to remove dead variables
 			If they haven't been used they aren't printed*/
-			
+
 			/*Checks if ID has ever been used*/
 			if(symTab[t->item]->uses > 0)
 			{
