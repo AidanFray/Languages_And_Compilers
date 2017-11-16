@@ -16,7 +16,7 @@ int main(void)
 }
 
 void yyerror(char *s) {
-	fprintf(stderr, "Error: %s\n", s);
+	fprintf(stderr, "%s\n", s);
 }
 
 

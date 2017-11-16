@@ -97,10 +97,10 @@ int currentSymTabSize = 0;
 %%
 
 program : 
-		ID COLON block ENDP ID FULLSTOP  	
+		ID COLON block ENDP ID FULLSTOP 	
 		{ 	
 			TREE ParseTree; 
-			ParseTree = create_node($1, PROGRAM, $3, NULL, NULL);
+			ParseTree = create_node($1, PROGRAM, create_node($5, PROGRAM, NULL, NULL, NULL), $3, NULL);
 			
 			/*Prints the tree*/
 			#ifdef DEBUG
@@ -534,6 +534,8 @@ void Print_Expression(char* seperator, TREE t)
 	Code(t->second);
 }
 
+char* programID;
+char* endProgramID;
 void Code(TREE t)
 {
 	/* Deals with indent */
@@ -548,8 +550,16 @@ void Code(TREE t)
 		/*PROGRAM DESIGN*/
 		case PROGRAM:
 		
+			/*Check for matching ID's*/
+			programID = symTab[t->item]->identifier;
+			endProgramID = symTab[t->first->item]->identifier;
+			if(!(strcmp(programID, endProgramID) == 0))
+			{
+				yyerror("Warning: Program ID's do not match");
+			}
+
 			/*Program name comment*/
-			printf("\n/* Program: %s */\n\n", symTab[t->item]->identifier);
+			printf("\n/* Program: %s */\n\n", endProgramID);
 
 			/*Includes*/
 			printf("#include <stdio.h>\n\n");
@@ -558,7 +568,7 @@ void Code(TREE t)
 			/*Body*/
 			indent++;
 			PRINT_WITH_INDENT("register int _by;\n");
-			Code(t->first);
+			Code(t->second);
 			indent--;
 			PRINT_WITH_INDENT("}\n");
 			return;
