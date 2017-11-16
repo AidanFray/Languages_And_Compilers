@@ -561,25 +561,31 @@ void Code(TREE t)
 			return;
 
 		case DECLARATION_IDENTIFIER:
-			if(t->first == NULL)
+			/*Optimisation to remove dead variables
+			If they haven't been used they aren't printed*/
+			
+			/*Checks if ID has ever been used*/
+			if(symTab[t->item]->uses > 0)
 			{
-				/*Checks if ID has ever been used*/
-				if(symTab[t->item]->uses > 0)
-				{
-					printf("%s", Print_ID(t->item));
+				if (symTab[t->item]->type_name[0] == 'C')
+				{	
+					PRINT_WITH_INDENT("char ");
+					printf("%s;\n", Print_ID(t->item));
+				}
+				else if (symTab[t->item]->type_name[0] == 'I')
+				{	
+					PRINT_WITH_INDENT("int ");
+					printf("%s;\n", Print_ID(t->item));
+				}
+				else if (symTab[t->item]->type_name[0] == 'D')
+				{	
+					PRINT_WITH_INDENT("double ");
+					printf("%s;\n", Print_ID(t->item));
 				}
 			}
-			else
-			{
-				/*Checks if ID has ever been used*/
-				if(symTab[t->item]->uses > 0)
-				{
-					printf("%s", Print_ID(t->item));
-					printf(",");
-				}
-				Code(t->first);
-			}
+			Code(t->first);
 		 	return;
+			 
 		case DECLARATION_BLOCK:
 			/*Assigning a type*/
 			if (t->second->item == CHARACTER_VALUE)
@@ -595,31 +601,9 @@ void Code(TREE t)
 				AssignAllVariables(t, "DOUBLE");		
 			}
 			
-			Code(t->second);
-			printf(" ");
 			Code(t->first);
-			printf(";\n");
+			Code(t->second);
 			Code(t->third);
-			return;
-
-		/*TYPES*/
-		case TYPE_RULE:
-			if(t->item == CHARACTER_VALUE)
-			{
-				/*TODO: Need a check here that traverses the list to look if any variables on the line aren't dead*/
-				PRINT_WITH_INDENT("char");
-				return;
-			}
-			else if (t->item == INTEGER_VALUE)
-			{
-				PRINT_WITH_INDENT("int");
-				return;
-			}
-			else if (t->item == REAL_VALUE)
-			{
-				PRINT_WITH_INDENT("double");
-				return;
-			}
 			return;
 
 		case ASSIGNMENT_STATEMENT:
@@ -651,15 +635,15 @@ void Code(TREE t)
 		case IF_ELSE_STATEMENT:
 			PRINT_WITH_INDENT("if (");
 			Code(t->first);
-			printf(") \n{\n");
+			printf(") {\n");
 
 			/*Body*/
 			indent++;
 			Code(t->second);
 			indent--;
 
-			PRINT_WITH_INDENT("\n}\n");
-			PRINT_WITH_INDENT("else \n{\n");
+			PRINT_WITH_INDENT("}\n");
+			PRINT_WITH_INDENT("else {\n");
 
 			/*Body*/
 			indent++;
