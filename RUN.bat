@@ -24,6 +24,7 @@ gcc -o c c_code.c
 gcc -o d d_code.c
 gcc -o e e_code.c
 
-c
 
 cd ..
+
+XCOPY parser.exe .\"Additional Tests"\parser.exe
