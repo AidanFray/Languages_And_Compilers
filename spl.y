@@ -492,9 +492,11 @@ void PrintTree(TREE t, int indent)
 	for (i = 0; i < indent; i++) printf(" ");
 
 	/*Prints the rest of the tree sections*/
-	PrintTree(t->first, indent + INDENTVALUE);
-	PrintTree(t->second, indent + INDENTVALUE);
-	PrintTree(t->third, indent + INDENTVALUE);
+	indent++;
+	PrintTree(t->first, indent);
+	PrintTree(t->second, indent );
+	PrintTree(t->third, indent);
+	indent--;
 }
 
 /* Function that checks if the ID is in the symbol table */
@@ -736,7 +738,7 @@ void Code(TREE t)
 			/*Character*/
 			if (symTab[t->item]->type_name[0] == 'C')
 			{	
-				PRINT_WITH_INDENT("scanf(\"%%c\", &" );
+				PRINT_WITH_INDENT("scanf(\" %%c\", &" );
 			}
 			/*Integer*/
 			else 
