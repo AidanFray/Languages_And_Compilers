@@ -174,6 +174,7 @@ int installId(char *id)
 
         /*Inits the uses value*/
         symTab[currentSymTabSize]->uses = 0;
+         symTab[currentSymTabSize]->assign_bool = 0;
 
         /* Recommended code for preventing buffer overrun on bounded strings */
         strncpy(symTab[currentSymTabSize]->identifier,id,IDLENGTH);

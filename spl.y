@@ -61,14 +61,15 @@ typedef  TREE_NODE *TREE;
 TREE create_node(int,int,TREE,TREE,TREE);
 int yylex (void);
 void PrintTree(TREE, int);
-void ID_CHECK(char*, TREE);
+void CheckForID(char*, TREE);
 void Code(TREE);
 
 /* ------------- Symbol table definition ----------------------- */
 struct symTabNode {
-    char identifier[IDLENGTH];
-	char type_name[10];
-	int uses;
+    char identifier[IDLENGTH]; /*Variable ID*/
+	char type_name[10]; /*The type of the variable*/
+	int uses; /*Keeps track how many times a variable is used*/
+	unsigned int assign_bool; /*Used to signal if a variable has been assigned*/
 };
 typedef  struct symTabNode SYMTABNODE;
 typedef  SYMTABNODE *SYMTABNODEPTR;
@@ -425,16 +426,6 @@ any_digit :
 			
 %%
 
-/*Reccursive method used to assign all variables a type*/
-void AssignAllVariables(TREE t, char* c)
-{
-	if(t->first != NULL)
-	{
-		strncpy(symTab[t->first->item]->type_name, c, 10);
-		AssignAllVariables(t->first, c);
-	}
-	return;
-}
 
 /* Code for routines for managing the Parse Tree */
 TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3)
@@ -467,13 +458,16 @@ void PrintTree(TREE t, int indent)
 				printf("NUMBER: %d ", t->item);
 				break;
 			case VALUE_ID:
-				ID_CHECK("ID", t);
+				CheckForID
+			("ID", t);
 				break;
 			case DECLARATION_IDENTIFIER:
-				ID_CHECK("DECLARATION ID", t);
+				CheckForID
+			("DECLARATION ID", t);
 				break;
 			case PROGRAM:
-				ID_CHECK("PROGRAM", t);
+				CheckForID
+			("PROGRAM", t);
 				break;
 			default:
 				printf("ITEM: %d ", t->item);
@@ -499,8 +493,19 @@ void PrintTree(TREE t, int indent)
 	indent--;
 }
 
+/*Reccursive method used to assign all variables a type*/
+void AssignAllVariables(TREE t, char* c)
+{
+	if(t->first != NULL)
+	{
+		strncpy(symTab[t->first->item]->type_name, c, 10);
+		AssignAllVariables(t->first, c);
+	}
+	return;
+}
+
 /* Function that checks if the ID is in the symbol table */
-void ID_CHECK(char *idType, TREE t)
+void CheckForID(char *idType, TREE t)
 {
 		if (t->item >= 0 && t->item < SYMTABSIZE)
 			printf("%s: %s ", idType, symTab[t->item]->identifier);
@@ -508,25 +513,33 @@ void ID_CHECK(char *idType, TREE t)
 			printf("UNKNOWN ID: %d ", t->item);
 }
 
-/*
-This function prints expressions in the format of
-	Left <Operator> Right
-An example is:
- 	1 * 2 */
-
+/*This method is used as a central point to print ID's of variables*/
 char output[50];
-char* Print_ID(int item)
+char* Print_ID(int item, int USE)
 {
+	/*WARNING*/ 
+	if(symTab[item]->assign_bool == 0 && USE == 1)
+	{
+		yyerror("Warning: A Variable is being used before it has been assigned");
+	}
+
 	/*Adds a unique ending to stop C keywords from breaking the compiling*/
 	strcpy(output, symTab[item]->identifier);
 	char id_array[] = "_V";
 
 	strcat(output, id_array);
 	return output;
-	
-	return "";
 }
 
+/*This method sets the variable to be flagged as assigned
+This is for warning when variables are uses before they're
+assigned*/
+void SetIDToAssigned(int item)
+{
+	symTab[item]->assign_bool = 1;
+}
+
+/*Uses to print an expression*/
 void Print_Expression(char* seperator, TREE t)
 {
 	Code(t->first);
@@ -583,17 +596,17 @@ void Code(TREE t)
 				if (symTab[t->item]->type_name[0] == 'C')
 				{	
 					PRINT_WITH_INDENT("char ");
-					printf("%s;\n", Print_ID(t->item));
+					printf("%s;\n", Print_ID(t->item, 0));
 				}
 				else if (symTab[t->item]->type_name[0] == 'I')
 				{	
 					PRINT_WITH_INDENT("int ");
-					printf("%s;\n", Print_ID(t->item));
+					printf("%s;\n", Print_ID(t->item, 0));
 				}
 				else if (symTab[t->item]->type_name[0] == 'D')
 				{	
 					PRINT_WITH_INDENT("double ");
-					printf("%s;\n", Print_ID(t->item));
+					printf("%s;\n", Print_ID(t->item, 0));
 				}
 			}
 			Code(t->first);
@@ -620,7 +633,8 @@ void Code(TREE t)
 			return;
 
 		case ASSIGNMENT_STATEMENT:
-			PRINT_WITH_INDENT("%s",Print_ID(t->item));
+			SetIDToAssigned(t->item);
+			PRINT_WITH_INDENT("%s", Print_ID(t->item, 0));
 			Code(t->second);
 			printf(" = ");
 			Code(t->first);
@@ -706,7 +720,8 @@ void Code(TREE t)
 			*/
 
 			/*ID value*/
-			buffer = Print_ID(t->item);
+			SetIDToAssigned(t->item);
+			buffer = Print_ID(t->item, 0);
 			strcpy(loopID, buffer);
 	
 			/*for(a = XX, _by = by;*/
@@ -766,7 +781,11 @@ void Code(TREE t)
 			{
 				PRINT_WITH_INDENT("scanf(\"%%c\", &" );				
 			}
-			printf("%s", Print_ID(t->item));
+
+			/*The value of the ID is assigned from the read statement*/
+			SetIDToAssigned(t->item);
+			printf("%s", Print_ID(t->item, 0));
+
 			printf(");\n");
 			return;
 
@@ -853,7 +872,7 @@ void Code(TREE t)
 			return;
 
 		case VALUE_ID:
-			printf("%s", Print_ID(t->item));
+			printf("%s", Print_ID(t->item, 1));
 			return;
 
 		case VALUE_EXPRESSION:
