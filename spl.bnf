@@ -19,40 +19,40 @@
 			| INTEGER 
 			| REAL
 
-<statment_list> ::= 
+<statement_list> ::= 
 			<statement> 
-			| <statement> ";" <statment_list>
+			| <statement> ";" <statement_list>
 
 <statement> ::= 
 			<assignment_statment> 
-			| <if_statment> 
-			| <do_statment> 
-			| <while_statment> 
-			| <for_statment> 
-			| <write_statment> 
-			| <read_statment> 
+			| <if_statement> 
+			| <do_statement> 
+			| <while_statement> 
+			| <for_statement> 
+			| <write_statement> 
+			| <read_statement> 
 
 <assignment_statment> ::= 
 			<expression> "->" <identifier>
 
-<if_statment> ::= 
-			IF <condition> THEN <statement_list> ENDIF
-            | IF <condition> THEN <statement_list> ELSE <statement_list> ENDIF
+<if_statement> ::= 
+			IF <conditional> THEN <statement_list> ENDIF
+            | IF <conditional> THEN <statement_list> ELSE <statement_list> ENDIF
 
-<do_statment> ::= 
-			DO <statment_list> WHILE <conditional> ENDDO
+<do_statement> ::= 
+			DO <statement_list> WHILE <conditional> ENDDO
 
-<while_statment> ::= 
-			WHILE <conditional> DO <statment_list> ENDWHILE
+<while_statement> ::= 
+			WHILE <conditional> DO <statement_list> ENDWHILE
 
-<for_statment> ::= 
+<for_statement> ::= 
 			FOR <identifier> IS <expression> BY <expression> TO <expression> DO <expression> ENDFOR
 
-<write_statment> ::= 
+<write_statement> ::= 
 			NEWLINE 
 			| WRITE "("<output_list>")" 
 
-<read_statment> ::= 
+<read_statement> ::= 
 			READ "("<identifier>")"
 
 <output_list> ::= 
@@ -61,14 +61,18 @@
 
 
 <conditional> ::= 
-			<expression> <comparator> <expression>
-			| NOT <conditional_body> 
+			<conditional_body>
+			| <not_expression> <conditional_body> 
 			| <expression> <comparator> <expression> AND <conditional> 
 			|<expression> <comparator> <expression> OR <conditional>
 
 <conditional_body> ::= 
 			<expression> <comparator> <expression>
 
+<not_expression> ::=
+			NOT
+			| NOT <not_expression>
+			
 <comparator> ::= 
 			"="
 			|"<>"
