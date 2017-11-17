@@ -28,4 +28,52 @@ The SPL compiler has the optimisation of removing dead variables included, if a 
 
 
 ## CONSIDERATIONS
-SPL's type sysyem has been assumed to be like C's where it is strongly typed.
+SPL's type system has been assumed to be like C's where it is strongly typed.
+
+## EXAMPLE PROGRAM
+
+SPL PROGRAM
+
+	Prog4D:
+
+	DECLARATIONS
+
+	r1, r2, r3 OF TYPE REAL;
+
+	CODE
+
+	  -2.4 -> r1;
+	  -34.989 -> r2;
+	  r1 * r2 / 7.4 -> r3;
+	  WRITE(r3);
+	  NEWLINE;
+	  READ(r1);
+	  r1 + r3 -> r3;
+	  WRITE( r3);
+	  NEWLINE  
+
+	ENDP Prog4D.
+	
+	
+COMPILED C CODE
+
+	/* Program: Prog4D */
+
+	#include <stdio.h>
+
+	int main(void) 
+	{
+	    register int _by;
+	    double r1_V;
+	    double r2_V;
+	    double r3_V;
+	    r1_V = -2.4;
+	    r2_V = -34.989;
+	    r3_V = r1_V * r2_V / 7.4;
+	    printf("%lf", r3_V);
+	    printf("\n");
+	    scanf("%lf", &r1_V);
+	    r3_V = r1_V + r3_V;
+	    printf("%lf", r3_V);
+	    printf("\n");
+	}
