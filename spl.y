@@ -11,6 +11,8 @@
 #endif
 
 void yyerror(const char *s);
+void warning(char* s);
+void error(char* s);
 
 /* These constants are used later in the code */
 #define SYMTABSIZE     50
@@ -78,6 +80,7 @@ struct symTabNode {
 	char type_name[10]; /*The type of the variable*/
 	int uses; /*Keeps track how many times a variable is used*/
 	unsigned int assign_bool; /*Used to signal if a variable has been assigned*/
+	unsigned int declared_bool;
 };
 typedef  struct symTabNode SYMTABNODE;
 typedef  SYMTABNODE *SYMTABNODEPTR;
@@ -220,12 +223,14 @@ assignment_statement :
 		|
 		INT_MAX ASSIGNMENT ID
 		{
+			system(CLEAR_SCREEN);
 			yyerror("Error - Assignment of interger larger than INT_MAX");
 			YYABORT;
 		}
 		|
 		INT_MIN ASSIGNMENT ID
 		{
+			system(CLEAR_SCREEN);			
 			yyerror("Error - Assignment of integer smaller than INT_MIN");
 			YYABORT;
 		}
@@ -472,9 +477,6 @@ TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3)
     return (t);
 }
 
-/*Keeps track of how much indent there should be*/
-#define INDENTVALUE 2
-int currentPosition = 0;
 /* Put other auxiliary functions here */
 void PrintTree(TREE t, int indent)
 {
@@ -520,7 +522,7 @@ void PrintTree(TREE t, int indent)
 	/*Prints the rest of the tree sections*/
 	indent++;
 	PrintTree(t->first, indent);
-	PrintTree(t->second, indent );
+	PrintTree(t->second, indent);
 	PrintTree(t->third, indent);
 	indent--;
 }
@@ -528,9 +530,18 @@ void PrintTree(TREE t, int indent)
 /*Reccursive method used to assign all variables a type*/
 void AssignAllVariables(TREE t, char* c)
 {
+
 	if(t->first != NULL)
 	{
+		/*Sets the type*/
 		strncpy(symTab[t->first->item]->type_name, c, 10);
+
+		/*Checks if the ID has been defined prior*/
+		if(symTab[t->first->item]->declared_bool == 0)
+			symTab[t->first->item]->declared_bool = 1; /*Sets the bool to declared*/
+		else
+			error("Error - Redeclaration of a variable");
+
 		AssignAllVariables(t->first, c);
 	}
 	return;
@@ -552,8 +563,7 @@ char* Print_ID(int item, int USE)
 	/*WARNING*/ 
 	if(symTab[item]->assign_bool == 0 && USE == 1)
 	{
-		yyerror("Warning: A Variable is being used before it has been assigned");
-		exit(1);
+		warning("Warning: A Variable is being used before it has been assigned");
 	}
 
 	/*Adds a unique ending to stop C keywords from breaking the compiling*/
@@ -564,14 +574,6 @@ char* Print_ID(int item, int USE)
 	return output;
 }
 
-/*This method sets the variable to be flagged as assigned
-This is for warning when variables are uses before they're
-assigned*/
-void SetIDToAssigned(int item)
-{
-	symTab[item]->assign_bool = 1;
-}
-
 /*Uses to print an expression*/
 void Print_Expression(char* seperator, TREE t)
 {
@@ -580,8 +582,16 @@ void Print_Expression(char* seperator, TREE t)
 	Code(t->second);
 }
 
+/*This method sets the variable to be flagged as assigned
+This is for warning when variables are uses before they're
+assigned*/
+void SetIDToAssigned(int item)
+{
+	symTab[item]->assign_bool = 1;
+}
+
 /*Recusively goes through and checks an expression for a float value*/
-int CheckSideForFloat(TREE t)
+int CheckForFloat(TREE t)
 {
 	if(t == NULL) 
 		return 0;
@@ -590,8 +600,37 @@ int CheckSideForFloat(TREE t)
 	|| t->nodeIdentifier == LITERAL_DECIMAL)
 		return 1;
 
-	if (CheckSideForFloat(t->first) || CheckSideForFloat(t->second) || CheckSideForFloat(t->third))
+	if (CheckForFloat(t->first) || CheckForFloat(t->second) || CheckForFloat(t->third))
 		return 1;
+}
+
+/*Checks if the ID's bool for delaration has been set*/
+int CheckIfID_IsUndeclared(TREE t)
+{
+	if(t == NULL) return 0;
+
+	if(t->nodeIdentifier == VALUE_ID)
+	{
+		if(symTab[t->item]->declared_bool == 0)
+		{
+			return 1;
+		}
+	}
+	return CheckIfID_IsUndeclared(t->first);
+}
+
+/*ERROR and WARNING PRINTING*/
+void error(char* s)
+{
+	/*Stops previous C code from being part of the input*/
+	system(CLEAR_SCREEN);
+	yyerror(s);
+	exit(1);
+}
+
+void warning(char *s)
+{
+	yyerror(s);
 }
 
 char* programID;
@@ -605,6 +644,7 @@ void Code(TREE t)
 	int i;
 	static unsigned indent;
 
+	
 	if (t == NULL) return; 
 
 	switch (t->nodeIdentifier)
@@ -617,7 +657,7 @@ void Code(TREE t)
 			endProgramID = symTab[t->first->item]->identifier;
 			if(!(strcmp(programID, endProgramID) == 0))
 			{
-				yyerror("Warning: Program ID's do not match");
+				warning("Warning: Program ID's do not match");
 			}
 
 			/*Program name comment*/
@@ -682,26 +722,25 @@ void Code(TREE t)
 			return;
 
 		case ASSIGNMENT_STATEMENT:
+			/*ERROR CHECKS*/
+			/*Checks if the assignment expression is and id
+			it also checks if that id is declared*/
+			if(CheckIfID_IsUndeclared(t) == 1) 
+				error("Error - Using a variable to assign that is not declared");
+			/*Check if the assigment value is the program ID*/
+			if(strcmp(symTab[t->item]->identifier, programID) == 0)
+				error("Error - Assignment attempt on the program ID");
+			/*Checks if ID has been declared */
+			if(symTab[t->item]->uses < 1)
+				error("Error - Trying to assign to a variable that is underclared!");
 
-			/*Checks if ID exists
-			it needs more than one use because 
-			this assignment counts as a use*/
-			if(symTab[t->item]->uses > 0)
-			{
-				SetIDToAssigned(t->item);
-				PRINT_WITH_INDENT("%s", Print_ID(t->item, 0));
-				Code(t->second);
-				printf(" = ");
-				Code(t->first);
-				printf(";\n");
-			}
-			else
-			{
-				system(CLEAR_SCREEN);
-				yyerror("Error - Trying to assign a variable that is underclared!");
-				exit(1);
-			}
-		
+			/*RULES*/		
+			SetIDToAssigned(t->item);
+			PRINT_WITH_INDENT("%s", Print_ID(t->item, 0));
+			Code(t->second);
+			printf(" = ");
+			Code(t->first);
+			printf(";\n");
 			return;
 
 		case NOT_EXPRESSION:
@@ -782,6 +821,14 @@ void Code(TREE t)
 			ACW Help section
 			*/
 
+			/*ERROR CHECKS*/
+			if (CheckForFloat(t->first->first)) 
+				error("Error - Float used in for-loop interator assignment");
+			if (CheckForFloat(t->first->first)) 
+				error("Error - Float used as max range specifier");
+			if (CheckForFloat(t->first->first)) 
+				error("Error - Float used as increment step value");
+
 			/*ID value*/
 			SetIDToAssigned(t->item);
 			buffer = Print_ID(t->item, 0);
@@ -793,7 +840,6 @@ void Code(TREE t)
 			printf(" = ");
 			Code(t->first->first);
 			printf(", ");	
-
 			printf("_by = ");
 			Code(t->first->second);
 			printf("; ");
@@ -856,15 +902,13 @@ void Code(TREE t)
 			/*Printing a Variable*/
 			if (t->first->item != NOTHING)
 			{
-				char* type_n = symTab[t->first->item]->type_name;
-				
+				/*ERROR CHECKS*/
 				/*Check for initalisation*/
-				if(symTab[t->first->item]->assign_bool == 0)
-				{
-					system(CLEAR_SCREEN);
-					yyerror("Error - Trying to print a variable that has not been initalised");
-					exit(1);
-				}
+				if(symTab[t->first->item]->assign_bool == 0) 
+					error("Error - Trying to print a variable that has not been initalised");	
+
+
+				char* type_n = symTab[t->first->item]->type_name;
 
 				if (type_n[0] == 'C')
 				{
@@ -882,7 +926,7 @@ void Code(TREE t)
 			/*Printing an expression*/
 			else if(t->first->nodeIdentifier == VALUE_EXPRESSION)
 			{
-				if(CheckSideForFloat(t->first))
+				if(CheckForFloat(t->first))
 				{
 					PRINT_WITH_INDENT("printf(\"%%lf\",", "");
 				}
