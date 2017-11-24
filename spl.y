@@ -20,7 +20,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE, VALUE_ID,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT, NOT_EXPRESSION, INT_MAX_PLUS_EXPRESSION, INT_MIN_MINUS_EXPRESSION
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT, NEG_LITERAL_DECIMAL, LITERAL_DECIMAL ,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT, NOT_EXPRESSION, INT_MAX_PLUS_EXPRESSION, INT_MIN_MINUS_EXPRESSION
 };  
 
 char *NodeName[] = 
@@ -30,7 +30,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE" ,"VALUE_ID","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT", "NOT_EXPRESSION", " INT_MAX_PLUS_EXPRESSION", "INT_MIN_MINUS_EXPRESSION"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","NEG_LITERAL_DECIMAL","LITERAL_DECIMAL","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT", "NOT_EXPRESSION", " INT_MAX_PLUS_EXPRESSION", "INT_MIN_MINUS_EXPRESSION"
 };
 
 #ifndef TRUE
@@ -423,11 +423,11 @@ constant :
 number_constant : 
 		MINUS any_digit FULLSTOP any_digit
 		{
-			$$ = create_node(NOTHING, NEG_LITERAL_NUMBER_CONSTANT, $2, $4, NULL);		
+			$$ = create_node(NOTHING, NEG_LITERAL_DECIMAL, $2, $4, NULL);		
 		} 
 		| any_digit FULLSTOP any_digit
 		{
-			$$ = create_node(NOTHING, LITERAL_NUMBER_CONSTANT, $1, $3, NULL);					
+			$$ = create_node(NOTHING, LITERAL_DECIMAL, $1, $3, NULL);					
 		}
 		| MINUS any_digit
 		{
@@ -570,6 +570,11 @@ void Print_Expression(char* seperator, TREE t)
 	Code(t->first);
 	printf(" %s ", seperator);
 	Code(t->second);
+}
+
+void Get_TypeOfLiteral(TREE t)
+{
+
 }
 
 char* programID;
@@ -828,6 +833,7 @@ void Code(TREE t)
 			return;
 
 		case OUTPUT_LIST:
+			/*Printing a Variable*/
 			if (t->first->item != NOTHING)
 			{
 				char* type_n = symTab[t->first->item]->type_name;
@@ -845,14 +851,34 @@ void Code(TREE t)
 					PRINT_WITH_INDENT("printf(\"%%lf\", ");
 				}
 			}
+			/*Printing an expression*/
 			else if(t->first->nodeIdentifier == VALUE_EXPRESSION)
 			{
 				PRINT_WITH_INDENT("printf(\"%%d\", ");
 			}
+			/*Printing a literal value*/
 			else
 			{
-				PRINT_WITH_INDENT("printf(\"%%c\", ");
+				if(t->first->first->nodeIdentifier == NUMBER_CONSTANT)
+				{
+					/* DECIMAL VALUE*/
+					if(t->first->first->first->nodeIdentifier == NEG_LITERAL_DECIMAL ||
+					   t->first->first->first->nodeIdentifier == LITERAL_DECIMAL)
+					{
+						PRINT_WITH_INDENT("printf(\"%%lf\", ");
+					}
+					/* INT VALUE */
+					else
+					{
+						PRINT_WITH_INDENT("printf(\"%%d\", ");
+					}
+				}
+				else
+				{
+					PRINT_WITH_INDENT("printf(\"%%c\", ");
+				}
 			}
+			
 
 			Code(t->first);
 			printf(");\n");
@@ -941,35 +967,25 @@ void Code(TREE t)
 			return;
 
 		case NEG_LITERAL_NUMBER_CONSTANT:
-			/*Signle negative value*/
-			if (t->second == NULL)
-			{
-				printf("-");
-				Code(t->first);
-			}
-			/*Multi negative decimal*/
-			else
-			{
-				printf("-");
-				Code(t->first);
-				printf(".");
-				Code(t->second);
-			}
+			printf("-");
+			Code(t->first);
+			return;
+
+		case NEG_LITERAL_DECIMAL:
+			printf("-");
+			Code(t->first);
+			printf(".");
+			Code(t->second);
 			return;
 
 		case LITERAL_NUMBER_CONSTANT:
-			/*Single value*/
-			if(t->second == NULL)
-			{
-				Code(t->first);		
-			}
-			/*Decimal value*/
-			else
-			{
-				Code(t->first);
-				printf(".");
-				Code(t->second);
-			}
+			Code(t->first);		
+			return;
+
+		case LITERAL_DECIMAL:
+			Code(t->first);
+			printf(".");
+			Code(t->second);
 			return;
 
 		case ANY_DIGIT:
