@@ -26,5 +26,4 @@ gcc -o e e_code.c
 
 cd ..
 
-REM XCOPY parser.exe .\Additional_Tests\parser.exe
 XCOPY parser.exe .\Extra_Tests\parser.exe
