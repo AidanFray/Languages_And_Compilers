@@ -22,7 +22,7 @@ digit       [0-9]
 char        '{letter}'
 id          {letter}({letter}|{digit})*
 number      {digit}+
-	
+
 %%
 		
 {ws}        ; /* white space, do nothing */
@@ -34,6 +34,9 @@ number      {digit}+
 
                 TOKEN(CHAR)	
             }
+
+"2147483648" TOKEN(INT_MAX)
+"-2147483648" TOKEN(INT_MIN)
 
 			/* --------------------------KEYWORDS------------------------ */
 DECLARATIONS TOKEN(DECLARATIONS)
@@ -94,6 +97,7 @@ NOT			TOKEN(NOT)
 "<="		TOKEN(ELT)
 ">"        	TOKEN(GT)
 ">="		TOKEN(EGT)
+
 			/* ---------------------------------------------------------- */
 			
 			
@@ -104,6 +108,8 @@ INTEGER		TOKEN(INTEGER)
 REAL		TOKEN(REAL)
 			/* ---------------------------------------------------------- */
 
+
+
 {id}        {
                 #ifndef PRINT
 				yylval.iVal = installId(yytext);
@@ -112,6 +118,8 @@ REAL		TOKEN(REAL)
 				TOKEN(ID)
                 
 			}
+
+
 
 {number}    {
                 #ifndef PRINT

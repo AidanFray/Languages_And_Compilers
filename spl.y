@@ -11,6 +11,7 @@ void yyerror(const char *s);
 #define NOTHING        -1
 #define INDENTOFFSET    2
 
+
 /* Enum that defines the types used in the ParseTree */
 enum ParseTreeNodeType_RULE 
 { 
@@ -19,7 +20,7 @@ enum ParseTreeNodeType_RULE
 	FOR_STATEMENT,WRITE_STATEMENT,WRITE_STATEMENT_NEWLINE,READ_STATEMENT,OUTPUT_LIST,CONDITIONAL,CONDITIONAL_AND, 
 	CONDITIONAL_OR, CONDITIONAL_BODY, CONDITIONAL_BODY_NOT ,NOT_VALUE,
 	COMPARATOR,EXPRESSION,PLUS_EXPRESSION,MINUS_EXPRESSION,TERM,DIVIDE_TERM,TIMES_TERM,VALUE, VALUE_ID,NUMBER_CONSTANT,
-	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT, NOT_EXPRESSION
+	CHAR_CONSTANT,LITERAL_CHAR_CONSTANT,LITERAL_NUMBER_CONSTANT,ANY_DIGIT, VALUE_EXPRESSION, NEG_LITERAL_NUMBER_CONSTANT, NOT_EXPRESSION, INT_MAX_PLUS_EXPRESSION, INT_MIN_MINUS_EXPRESSION
 };  
 
 char *NodeName[] = 
@@ -29,7 +30,7 @@ char *NodeName[] =
 	"FOR_STATEMENT","WRITE_STATEMENT","WRITE_STATEMENT_NEWLINE","READ_STATEMENT","OUTPUT_LIST","CONDITIONAL", "CONDITIONAL_AND", 
 	"CONDITIONAL_OR","CONDITIONAL_BODY", "CONDITIONAL_BODY_NOT" ,"NOT_VALUE",
 	"COMPARATOR","EXPRESSION","PLUS_EXPRESSION","MINUS_EXPRESSION","TERM","DIVIDE_TERM","TIMES_TERM","VALUE" ,"VALUE_ID","NUMBER_CONSTANT",
-	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT", "NOT_EXPRESSION"
+	"CHAR_CONSTANT","LITERAL_CHAR_CONSTANT","LITERAL_NUMBER_CONSTANT","ANY_DIGIT", "VALUE_EXPRESSION", "NEG_LITERAL_NUMBER_CONSTANT", "NOT_EXPRESSION", " INT_MAX_PLUS_EXPRESSION", "INT_MIN_MINUS_EXPRESSION"
 };
 
 #ifndef TRUE
@@ -93,13 +94,15 @@ int currentSymTabSize = 0;
 
 %token 
 	DECLARATIONS ENDP CODE IF THEN ELSE ENDIF WHILE DO ENDDO ENDWHILE FOR IS BY TO ENDFOR OF TYPE COLON SEMICOLON COMMA KET BRA FULLSTOP ASSIGNMENT
-	SINGLE_QUOTE PLUS MINUS DIVIDE TIMES ET NET LT ELT GT EGT CHARACTER INTEGER REAL READ NEWLINE WRITE AND OR NOT
+	SINGLE_QUOTE PLUS MINUS DIVIDE TIMES ET NET LT ELT GT EGT CHARACTER INTEGER REAL READ NEWLINE WRITE AND OR NOT INT_MIN INT_MAX
 
 %%
+
 
 program : 
 		ID COLON block ENDP ID FULLSTOP 	
 		{ 	
+
 			TREE ParseTree; 
 			ParseTree = create_node($1, PROGRAM, create_node($5, PROGRAM, NULL, NULL, NULL), $3, NULL);
 			
@@ -142,7 +145,6 @@ declaration_block :
 		| declaration_identifier OF TYPE type_rule SEMICOLON declaration_block
 		{
 			$$ = create_node(NOTHING, DECLARATION_BLOCK, $1, $4, $6);
-	
 		}
 		;
 	
@@ -207,6 +209,18 @@ assignment_statement :
 		expression ASSIGNMENT ID
 		{
 			$$ = create_node($3, ASSIGNMENT_STATEMENT, $1, NULL, NULL);
+		}
+		|
+		INT_MAX ASSIGNMENT ID
+		{
+			yyerror("Error - Assignment of interger larger than INT_MAX");
+			YYABORT;
+		}
+		|
+		INT_MIN ASSIGNMENT ID
+		{
+			yyerror("Error - Assignment of integer smaller than INT_MIN");
+			YYABORT;
 		}
 		;
 	
@@ -343,6 +357,11 @@ expression :
 		{
 			$$ = create_node(NOTHING, EXPRESSION, $1, NULL, NULL);		
 		} 
+		| INT_MAX PLUS expression
+		{
+			yyerror("Error - Addition to INT_MAX");
+			YYABORT;
+		}
 		| term PLUS expression 
 		{
 			$$ = create_node(NOTHING, PLUS_EXPRESSION, $1, $3, NULL);		
@@ -350,6 +369,11 @@ expression :
 		| term MINUS expression
 		{
 			$$ = create_node(NOTHING, MINUS_EXPRESSION, $1, $3, NULL);		
+		}
+		| INT_MIN MINUS expression
+		{
+			yyerror("Error - Minus from INT_MIN");
+			YYABORT;
 		}
 		;
 	
@@ -364,7 +388,9 @@ term :
 		}
 		| value DIVIDE term
 		{
-			$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL);		
+			{
+				$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL);		
+			}
 		}
 		;
 	
@@ -425,7 +451,6 @@ any_digit :
 		;
 			
 %%
-
 
 /* Code for routines for managing the Parse Tree */
 TREE create_node(int ival, int case_identifier, TREE p1,TREE  p2,TREE  p3)
@@ -633,12 +658,25 @@ void Code(TREE t)
 			return;
 
 		case ASSIGNMENT_STATEMENT:
-			SetIDToAssigned(t->item);
-			PRINT_WITH_INDENT("%s", Print_ID(t->item, 0));
-			Code(t->second);
-			printf(" = ");
-			Code(t->first);
-			printf(";\n");
+
+			/*Checks if ID exists
+			it needs more than one use because 
+			this assignment counts as a use*/
+			if(symTab[t->item]->uses > 0)
+			{
+				SetIDToAssigned(t->item);
+				PRINT_WITH_INDENT("%s", Print_ID(t->item, 0));
+				Code(t->second);
+				printf(" = ");
+				Code(t->first);
+				printf(";\n");
+			}
+			else
+			{
+				yyerror("Error: Trying to assign a variable that is underclared!");
+				return; /*Stops compiling*/
+			}
+		
 			return;
 
 		case NOT_EXPRESSION:
