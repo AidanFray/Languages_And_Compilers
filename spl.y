@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 void yyerror(const char *s);
 
 /* These constants are used later in the code */
@@ -366,14 +367,14 @@ expression :
 		{
 			$$ = create_node(NOTHING, PLUS_EXPRESSION, $1, $3, NULL);		
 		}
-		| term MINUS expression
-		{
-			$$ = create_node(NOTHING, MINUS_EXPRESSION, $1, $3, NULL);		
-		}
 		| INT_MIN MINUS expression
 		{
 			yyerror("Error - Minus from INT_MIN");
 			YYABORT;
+		}
+		| term MINUS expression
+		{
+			$$ = create_node(NOTHING, MINUS_EXPRESSION, $1, $3, NULL);		
 		}
 		;
 	
@@ -388,9 +389,7 @@ term :
 		}
 		| value DIVIDE term
 		{
-			{
-				$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL);		
-			}
+			$$ = create_node(NOTHING, DIVIDE_TERM, $1, $3, NULL);		
 		}
 		;
 	
@@ -546,6 +545,7 @@ char* Print_ID(int item, int USE)
 	if(symTab[item]->assign_bool == 0 && USE == 1)
 	{
 		yyerror("Warning: A Variable is being used before it has been assigned");
+		exit(1);
 	}
 
 	/*Adds a unique ending to stop C keywords from breaking the compiling*/
@@ -678,8 +678,8 @@ void Code(TREE t)
 			}
 			else
 			{
-				yyerror("Error: Trying to assign a variable that is underclared!");
-				return; /*Stops compiling*/
+				yyerror("Error - Trying to assign a variable that is underclared!");
+				exit(1);
 			}
 		
 			return;
@@ -838,6 +838,13 @@ void Code(TREE t)
 			{
 				char* type_n = symTab[t->first->item]->type_name;
 				
+				/*Check for initalisation*/
+				if(symTab[t->first->item]->assign_bool == 0)
+				{
+					yyerror("Error - Trying to print a variable that has not been initalised");
+					exit(1);
+				}
+
 				if (type_n[0] == 'C')
 				{
 					PRINT_WITH_INDENT("printf(\"%%c\", ");
