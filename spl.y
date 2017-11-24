@@ -72,6 +72,7 @@ TREE create_node(int,int,TREE,TREE,TREE);
 int yylex (void);
 void PrintTree(TREE, int);
 void CheckForID(char*, TREE);
+int CheckForChar(TREE t);
 void Code(TREE);
 
 /* ------------- Symbol table definition ----------------------- */
@@ -540,7 +541,7 @@ void AssignAllVariables(TREE t, char* c)
 		if(symTab[t->first->item]->declared_bool == 0)
 			symTab[t->first->item]->declared_bool = 1; /*Sets the bool to declared*/
 		else
-			error("Error - Redeclaration of a variable");
+			error("Error - Redeclaration of variable performed");
 
 		AssignAllVariables(t->first, c);
 	}
@@ -577,6 +578,9 @@ char* Print_ID(int item, int USE)
 /*Uses to print an expression*/
 void Print_Expression(char* seperator, TREE t)
 {
+	if(CheckForChar(t->first) || CheckForChar(t->second))
+		error("Error - Invalid character arithmatic performed");
+
 	Code(t->first);
 	printf(" %s ", seperator);
 	Code(t->second);
@@ -601,6 +605,20 @@ int CheckForFloat(TREE t)
 		return 1;
 
 	if (CheckForFloat(t->first) || CheckForFloat(t->second) || CheckForFloat(t->third))
+		return 1;
+}
+
+/*Recusively goes through and checks an expression for a char value*/
+int CheckForChar(TREE t)
+{
+	if(t == NULL) 
+		return 0;
+
+	/*Checks for the char*/
+	if(t->nodeIdentifier == CHAR_CONSTANT)
+		return 1;
+
+	if (CheckForChar(t->first) || CheckForChar(t->second) || CheckForChar(t->third))
 		return 1;
 }
 
