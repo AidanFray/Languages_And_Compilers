@@ -572,9 +572,18 @@ void Print_Expression(char* seperator, TREE t)
 	Code(t->second);
 }
 
-void Get_TypeOfLiteral(TREE t)
+/*Recusively goes through and checks an expression for a float value*/
+int CheckSideForFloat(TREE t)
 {
+	if(t == NULL) 
+		return 0;
 
+	if(t->nodeIdentifier == NEG_LITERAL_DECIMAL 
+	|| t->nodeIdentifier == LITERAL_DECIMAL)
+		return 1;
+
+	if (CheckSideForFloat(t->first) || CheckSideForFloat(t->second) || CheckSideForFloat(t->third))
+		return 1;
 }
 
 char* programID;
@@ -854,7 +863,14 @@ void Code(TREE t)
 			/*Printing an expression*/
 			else if(t->first->nodeIdentifier == VALUE_EXPRESSION)
 			{
-				PRINT_WITH_INDENT("printf(\"%%d\", ");
+				if(CheckSideForFloat(t->first))
+				{
+					PRINT_WITH_INDENT("printf(\"%%lf\",", "");
+				}
+				else
+				{
+					PRINT_WITH_INDENT("printf(\"%%d\", ");
+				}
 			}
 			/*Printing a literal value*/
 			else
@@ -878,7 +894,6 @@ void Code(TREE t)
 					PRINT_WITH_INDENT("printf(\"%%c\", ");
 				}
 			}
-			
 
 			Code(t->first);
 			printf(");\n");
