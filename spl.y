@@ -3,6 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*For compatability of clearning the output*/
+#if defined LINUX
+#define CLEAR_SCREEN "clear"
+#elif defined WIN32
+#define CLEAR_SCREEN "cls"
+#endif
 
 void yyerror(const char *s);
 
@@ -360,6 +366,7 @@ expression :
 		} 
 		| INT_MAX PLUS expression
 		{
+			system(CLEAR_SCREEN);			
 			yyerror("Error - Addition to INT_MAX");
 			YYABORT;
 		}
@@ -369,6 +376,7 @@ expression :
 		}
 		| INT_MIN MINUS expression
 		{
+			system(CLEAR_SCREEN);
 			yyerror("Error - Minus from INT_MIN");
 			YYABORT;
 		}
@@ -590,6 +598,8 @@ char* programID;
 char* endProgramID;
 void Code(TREE t)
 {
+ 	setvbuf(stdout, NULL, _IONBF, 0);
+
 	/* Deals with indent */
 	#define PRINT_WITH_INDENT for (i = indent; i--;) printf("    "); printf
 	int i;
@@ -687,6 +697,7 @@ void Code(TREE t)
 			}
 			else
 			{
+				system(CLEAR_SCREEN);
 				yyerror("Error - Trying to assign a variable that is underclared!");
 				exit(1);
 			}
@@ -850,6 +861,7 @@ void Code(TREE t)
 				/*Check for initalisation*/
 				if(symTab[t->first->item]->assign_bool == 0)
 				{
+					system(CLEAR_SCREEN);
 					yyerror("Error - Trying to print a variable that has not been initalised");
 					exit(1);
 				}
@@ -967,25 +979,8 @@ void Code(TREE t)
 			printf(")");
 			return;
 
-		char* letter;
-		char* total;
 		case CHAR_CONSTANT:	
-
-			/*Allocates memory to char */
-			letter = malloc(sizeof(char) * 4);
-			total = malloc(sizeof(char) * 10);
-			
-			/*Grabs the letter*/
-			memcpy(letter, &symTab[t->item]->identifier[1], 1);
-			
-			/*Encases it in double quotes*/
-			total[0] = '\'';
-			total[1] = letter[0];
-			total[2] = '\'';
-			total[3] = '\0';
-			
-			/*Prints the chracter*/
-			printf("%s", total);
+			printf("%s", symTab[t->item]->identifier); /* Prints the character */
 			return;
 
 		case NEG_LITERAL_NUMBER_CONSTANT:
