@@ -842,9 +842,9 @@ void Code(TREE t)
 			/*ERROR CHECKS*/
 			if (CheckForFloat(t->first->first)) 
 				error("Error - Float used in for-loop interator assignment");
-			if (CheckForFloat(t->first->first)) 
+			if (CheckForFloat(t->second)) 
 				error("Error - Float used as max range specifier");
-			if (CheckForFloat(t->first->first)) 
+			if (CheckForFloat(t->first->second)) 
 				error("Error - Float used as increment step value");
 
 			/*ID value*/
