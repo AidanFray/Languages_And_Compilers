@@ -6,7 +6,7 @@
 /*For compatability of clearning the output*/
 #if defined LINUX
 #define CLEAR_SCREEN "clear"
-#elif defined WIN32
+#else
 #define CLEAR_SCREEN "cls"
 #endif
 
@@ -661,7 +661,6 @@ void Code(TREE t)
 	#define PRINT_WITH_INDENT for (i = indent; i--;) printf("    "); printf
 	int i;
 	static unsigned indent;
-
 	
 	if (t == NULL) return; 
 
@@ -687,7 +686,6 @@ void Code(TREE t)
 
 			/*Body*/
 			indent++;
-			PRINT_WITH_INDENT("register int _by;\n");
 			Code(t->second);
 			indent--;
 			PRINT_WITH_INDENT("}\n");
@@ -823,17 +821,12 @@ void Code(TREE t)
 			indent--;
 
 			PRINT_WITH_INDENT("}\n\n");
-			return;
+				return;
 		
 		char loopID[50];
 		char* buffer;
 		case FOR_STATEMENT:
 			/*
-			Key:
-			First->First 	= IS
-			First->Second 	= BY
-			Second 			= TO
-
 			Note:
 			This for loop design has been taken from the
 			ACW Help section
@@ -847,29 +840,35 @@ void Code(TREE t)
 			if (CheckForFloat(t->first->second)) 
 				error("Error - Float used as increment step value");
 
+			/*Giving the branches meaningful names*/
+			TREE is = t->first->first;
+			TREE by = t->first->second;
+			TREE to = t->second;
+
 			/*ID value*/
 			SetIDToAssigned(t->item);
 			buffer = Print_ID(t->item, 0);
 			strcpy(loopID, buffer);
 	
-			/*for(a = XX, _by = by;*/
-			PRINT_WITH_INDENT("for (");
-			printf("%s", loopID); 
-			printf(" = ");
-			Code(t->first->first);
-			printf(", ");	
-			printf("_by = ");
-			Code(t->first->second);
-			printf("; ");
+			/*for (i=is; (by > 0 ? i-to: to-i ) <= 0 ; i += by) {}*/
 
-			/*(a-to)*((_by > 0) - (_by < 0)) <= 0 ;*/
-			printf("(%s-(", loopID);
-			Code(t->second);
-			printf("))*((_by > 0) - (_by < 0)) <= 0; ");
-		
+			/*for(a=is;*/
+			PRINT_WITH_INDENT("for (%s = ", loopID);
+			Code(is); /*IS*/
+			printf("; ");	
+
+			/* (by > 0 ? i-to: to-i ) <= 0 ; */
+			printf("(");
+			Code(by);
+			printf(" > 0 ? %s-(", loopID);
+			Code(to);
+			printf(") : ");
+			Code(to);
+			printf("-(%s)) <= 0; ", loopID);
+ 
 	        /*a += _by*/
-			printf("%s", loopID);
-			printf(" += _by");
+			printf("%s += ", loopID);
+			Code(by);
 			printf(") {\n");
 
 			/*{
